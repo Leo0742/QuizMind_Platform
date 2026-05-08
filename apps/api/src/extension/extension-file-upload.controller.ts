@@ -74,7 +74,15 @@ const EXTENSION_MIME_MAP: Record<string, string> = {
   webp: 'image/webp',
 };
 
-const KNOWN_AI_PROVIDERS = new Set<AiProvider>(['openai', 'anthropic', 'openrouter', 'polza', 'internal']);
+const KNOWN_AI_PROVIDERS = new Set<AiProvider>([
+  'openai',
+  'anthropic',
+  'openrouter',
+  'routerai',
+  'polza',
+  'internal',
+]);
+const ROUTERAI_DEFAULT_UPLOAD_MODEL = 'openai/gpt-5.3-chat';
 const ALLOWED_TYPES_ERROR_SUFFIX = 'Allowed types: txt, md, json, csv, pdf, docx, png, jpg, jpeg, webp. Maximum size: 10 MB.';
 
 function ok<T>(data: T): ApiSuccess<T> {
@@ -92,6 +100,21 @@ function isTextMime(mime: string): boolean {
 
 function isImageMime(mime: string): boolean {
   return IMAGE_MIME_TYPES.has(mime);
+}
+
+function normalizeRouterAiModelId(model: string | undefined): string | undefined {
+  const value = model?.trim();
+  if (!value) return undefined;
+
+  const aliases: Record<string, string> = {
+    'gpt-5.3-chat': 'openai/gpt-5.3-chat',
+    'gpt-4o': 'openai/gpt-4o',
+    'gpt-4o-mini': 'openai/gpt-4o-mini',
+    'gemini-2.5-flash': 'google/gemini-2.5-flash',
+    'claude-3.5-sonnet': 'anthropic/claude-3.5-sonnet',
+  };
+
+  return aliases[value.toLowerCase()] ?? value;
 }
 
 /**
@@ -281,14 +304,17 @@ export class ExtensionFileUploadController {
       typeof body.prompt === 'string' && body.prompt.trim()
         ? body.prompt.trim()
         : 'Analyze the following content and provide a helpful response.';
-    const model =
-      typeof body.model === 'string' && body.model.trim() ? body.model.trim() : undefined;
     const providerRaw =
       typeof body.provider === 'string' && body.provider.trim() ? body.provider.trim() : undefined;
     const provider: AiProvider | undefined =
       providerRaw && KNOWN_AI_PROVIDERS.has(providerRaw as AiProvider)
         ? (providerRaw as AiProvider)
         : undefined;
+    const bodyModel =
+      typeof body.model === 'string' && body.model.trim() ? body.model.trim() : undefined;
+    const model = provider === 'routerai'
+      ? normalizeRouterAiModelId(bodyModel) ?? ROUTERAI_DEFAULT_UPLOAD_MODEL
+      : bodyModel;
 
     let contentType: 'text' | 'image';
     let messageContent: string | AiProxyContentBlock[];
