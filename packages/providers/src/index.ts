@@ -74,6 +74,15 @@ export const providerModelCatalog: ProviderModelCatalogEntry[] = [
   },
   {
     provider: 'routerai',
+    modelId: 'openai/gpt-5.3-chat',
+    displayName: 'GPT-5.3 Chat',
+    capabilityTags: ['text', 'vision'],
+    availability: 'beta',
+    latencyClass: 'standard',
+    planAvailability: ['free', 'pro', 'business'],
+  },
+  {
+    provider: 'routerai',
     modelId: 'openai/gpt-4o-mini',
     displayName: 'GPT-4o Mini',
     capabilityTags: ['text', 'vision'],
