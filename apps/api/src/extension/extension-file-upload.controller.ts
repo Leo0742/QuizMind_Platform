@@ -15,7 +15,7 @@ import {
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { parseBearerToken } from '@quizmind/auth';
-import { type AiProvider, type AiProxyContentBlock, type ApiSuccess } from '@quizmind/contracts';
+import { type AiProvider, type AiProxyContentBlock, type AiProxyResult, type ApiSuccess } from '@quizmind/contracts';
 
 import { AiProxyService } from '../ai/ai-proxy.service';
 import { type CurrentSessionSnapshot } from '../auth/auth.types';
@@ -83,6 +83,12 @@ const KNOWN_AI_PROVIDERS = new Set<AiProvider>([
   'internal',
 ]);
 const ROUTERAI_DEFAULT_UPLOAD_MODEL = 'openai/gpt-5.3-chat';
+const ROUTERAI_IMAGE_UPLOAD_FALLBACK_MODELS = [
+  ROUTERAI_DEFAULT_UPLOAD_MODEL,
+  'google/gemini-2.5-flash',
+  'openai/gpt-4o-mini',
+  'openai/gpt-4o',
+];
 const ALLOWED_TYPES_ERROR_SUFFIX = 'Allowed types: txt, md, json, csv, pdf, docx, png, jpg, jpeg, webp. Maximum size: 10 MB.';
 
 function ok<T>(data: T): ApiSuccess<T> {
@@ -115,6 +121,37 @@ function normalizeRouterAiModelId(model: string | undefined): string | undefined
   };
 
   return aliases[value.toLowerCase()] ?? value;
+}
+
+function getHttpStatus(error: unknown): number | undefined {
+  if (error instanceof HttpException) return error.getStatus();
+  const status = (error as { status?: unknown })?.status;
+  return typeof status === 'number' ? status : undefined;
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error ?? 'unknown error');
+}
+
+function isRetryableRouterAiUploadError(error: unknown): boolean {
+  const status = getHttpStatus(error);
+  const message = getErrorMessage(error);
+  return (
+    message.toLowerCase().includes('routerai') &&
+    (status === 429 || status === 500 || status === 502 || status === 503 || status === 504)
+  );
+}
+
+function uniqueModels(models: Array<string | undefined>): string[] {
+  const seen = new Set<string>();
+  const result: string[] = [];
+  for (const model of models) {
+    const normalized = normalizeRouterAiModelId(model);
+    if (!normalized || seen.has(normalized)) continue;
+    seen.add(normalized);
+    result.push(normalized);
+  }
+  return result;
 }
 
 /**
@@ -354,11 +391,12 @@ export class ExtensionFileUploadController {
       );
     }
 
-    const proxyResult = await this.aiProxyService.proxyForCurrentSession(session, {
-      ...(provider ? { provider } : {}),
-      ...(model ? { model } : {}),
-      messages: [{ role: 'user', content: messageContent }],
-      stream: false,
+    const proxyResult = await this.proxyUploadWithRouterAiFallback({
+      session,
+      provider,
+      model,
+      contentType,
+      messageContent,
     });
 
     const upstreamResponse =
@@ -437,6 +475,60 @@ export class ExtensionFileUploadController {
     });
   }
 
+  private async proxyUploadWithRouterAiFallback(input: {
+    session: CurrentSessionSnapshot;
+    provider: AiProvider | undefined;
+    model: string | undefined;
+    contentType: 'text' | 'image';
+    messageContent: string | AiProxyContentBlock[];
+  }): Promise<AiProxyResult> {
+    const baseRequest = {
+      ...(input.provider ? { provider: input.provider } : {}),
+      ...(input.model ? { model: input.model } : {}),
+      messages: [{ role: 'user' as const, content: input.messageContent }],
+      stream: false,
+    };
+
+    try {
+      return await this.aiProxyService.proxyForCurrentSession(input.session, baseRequest);
+    } catch (error) {
+      if (input.contentType !== 'image' || !isRetryableRouterAiUploadError(error)) {
+        throw error;
+      }
+
+      const candidates = uniqueModels([
+        input.model,
+        ...ROUTERAI_IMAGE_UPLOAD_FALLBACK_MODELS,
+      ]);
+      let lastError = error;
+
+      for (const candidate of candidates) {
+        try {
+          console.warn(
+            JSON.stringify({
+              eventType: 'extension.file_upload_routerai_retry',
+              model: candidate,
+              previousError: getErrorMessage(lastError),
+              occurredAt: new Date().toISOString(),
+            }),
+          );
+          return await this.aiProxyService.proxyForCurrentSession(input.session, {
+            provider: 'routerai',
+            model: candidate,
+            messages: [{ role: 'user', content: input.messageContent }],
+            stream: false,
+          });
+        } catch (retryError) {
+          lastError = retryError;
+          if (!isRetryableRouterAiUploadError(retryError)) {
+            throw retryError;
+          }
+        }
+      }
+
+      throw lastError;
+    }
+  }
 
   private logUploadRequest(input: {
     installationId: string;
