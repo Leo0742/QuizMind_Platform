@@ -1,6 +1,3 @@
-import { promisify } from 'node:util';
-import { inflateRaw } from 'node:zlib';
-
 import {
   BadRequestException,
   Body,
@@ -40,48 +37,50 @@ interface AiProxyFileContentBlock {
   };
 }
 
-type UploadMessageContent = string | Array<AiProxyContentBlock | AiProxyFileContentBlock>;
-
-const inflateRawAsync = promisify(inflateRaw);
-
-const ALLOWED_MIME_TYPES = new Set([
-  'text/plain',
-  'text/markdown',
-  'text/x-markdown',
-  'application/json',
-  'text/csv',
-  'application/csv',
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'image/png',
-  'image/jpeg',
-  'image/webp',
-]);
-
-const TEXT_MIME_TYPES = new Set([
-  'text/plain',
-  'text/markdown',
-  'text/x-markdown',
-  'application/json',
-  'text/csv',
-  'application/csv',
-]);
+type UploadContentBlock = AiProxyContentBlock | AiProxyFileContentBlock;
+type UploadMessageContent = string | UploadContentBlock[];
 
 const IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp']);
+const TEXT_LIKE_MIME_TYPES = new Set([
+  'text/plain',
+  'text/markdown',
+  'text/x-markdown',
+  'text/csv',
+  'application/csv',
+  'application/json',
+  'application/xml',
+  'text/xml',
+  'application/javascript',
+  'text/javascript',
+]);
 
-const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_FILE_SIZE_BYTES = 50 * 1024 * 1024; // 50 MB
+const MAX_FILE_SIZE_LABEL = '50 MB';
 
 const EXTENSION_MIME_MAP: Record<string, string> = {
   txt: 'text/plain',
   md: 'text/markdown',
+  markdown: 'text/markdown',
   json: 'application/json',
+  jsonl: 'application/json',
   csv: 'text/csv',
+  xml: 'application/xml',
+  yml: 'text/plain',
+  yaml: 'text/plain',
+  log: 'text/plain',
   pdf: 'application/pdf',
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+  doc: 'application/msword',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  xls: 'application/vnd.ms-excel',
+  pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+  ppt: 'application/vnd.ms-powerpoint',
   png: 'image/png',
   jpg: 'image/jpeg',
   jpeg: 'image/jpeg',
   webp: 'image/webp',
+  gif: 'image/gif',
+  svg: 'image/svg+xml',
 };
 
 const KNOWN_AI_PROVIDERS = new Set<AiProvider>([
@@ -99,7 +98,6 @@ const ROUTERAI_IMAGE_UPLOAD_FALLBACK_MODELS = [
   'openai/gpt-4o-mini',
   'openai/gpt-4o',
 ];
-const ALLOWED_TYPES_ERROR_SUFFIX = 'Allowed types: txt, md, json, csv, pdf, docx, png, jpg, jpeg, webp. Maximum size: 10 MB.';
 
 function ok<T>(data: T): ApiSuccess<T> {
   return { ok: true, data };
@@ -107,11 +105,13 @@ function ok<T>(data: T): ApiSuccess<T> {
 
 function resolveMimeFromFilename(filename: string, declaredMime: string): string {
   const ext = filename.split('.').pop()?.toLowerCase() ?? '';
-  return EXTENSION_MIME_MAP[ext] ?? declaredMime;
+  const declared = declaredMime.trim().toLowerCase();
+  if (declared && declared !== 'application/octet-stream') return declared;
+  return EXTENSION_MIME_MAP[ext] ?? declared ?? 'application/octet-stream';
 }
 
-function isTextMime(mime: string): boolean {
-  return TEXT_MIME_TYPES.has(mime) || mime.startsWith('text/');
+function isTextLikeMime(mime: string): boolean {
+  return TEXT_LIKE_MIME_TYPES.has(mime) || mime.startsWith('text/');
 }
 
 function isImageMime(mime: string): boolean {
@@ -170,10 +170,10 @@ function uniqueModels(models: Array<string | undefined>): string[] {
 }
 
 function toDataUrl(mime: string, buffer: Buffer): string {
-  return `data:${mime};base64,${buffer.toString('base64')}`;
+  return `data:${mime || 'application/octet-stream'};base64,${buffer.toString('base64')}`;
 }
 
-function buildFileContentBlocks(input: { promptText: string; file: MulterFile; mime: string }): Array<AiProxyContentBlock | AiProxyFileContentBlock> {
+function buildFileContentBlocks(input: { promptText: string; file: MulterFile; mime: string }): UploadContentBlock[] {
   return [
     { type: 'text' as const, text: `${input.promptText}\n\nAttached file: ${input.file.originalname}` },
     {
@@ -184,101 +184,6 @@ function buildFileContentBlocks(input: { promptText: string; file: MulterFile; m
       },
     },
   ];
-}
-
-/**
- * Basic PDF text extraction fallback for providers that cannot accept file blocks.
- * RouterAI upload uses file content blocks and does not rely on this parser.
- */
-function extractPdfText(buffer: Buffer): string {
-  const raw = buffer.toString('latin1');
-  const textParts: string[] = [];
-  const btEtRegex = /BT([\s\S]*?)ET/g;
-  let match: RegExpExecArray | null;
-
-  while ((match = btEtRegex.exec(raw)) !== null) {
-    const block = match[1];
-
-    const tjRegex = /\(([^)\\]*(?:\\.[^)\\]*)*)\)\s*Tj/g;
-    let tjMatch: RegExpExecArray | null;
-    while ((tjMatch = tjRegex.exec(block)) !== null) {
-      const decoded = tjMatch[1]
-        .replace(/\\n/g, '\n')
-        .replace(/\\r/g, '')
-        .replace(/\\\(/g, '(')
-        .replace(/\\\)/g, ')')
-        .replace(/\\\\/g, '\\');
-      if (decoded.trim()) textParts.push(decoded);
-    }
-
-    const tjArrayRegex = /\[([^\]]*)\]\s*TJ/g;
-    let tjArrayMatch: RegExpExecArray | null;
-    while ((tjArrayMatch = tjArrayRegex.exec(block)) !== null) {
-      const innerMatches = tjArrayMatch[1].match(/\(([^)\\]*(?:\\.[^)\\]*)*)\)/g) ?? [];
-      for (const m of innerMatches) {
-        const decoded = m
-          .slice(1, -1)
-          .replace(/\\n/g, '\n')
-          .replace(/\\r/g, '')
-          .replace(/\\\(/g, '(')
-          .replace(/\\\)/g, ')')
-          .replace(/\\\\/g, '\\');
-        if (decoded.trim()) textParts.push(decoded);
-      }
-    }
-  }
-
-  const result = textParts.join(' ').replace(/\s{2,}/g, ' ').trim();
-  if (!result) {
-    throw new BadRequestException('This PDF has no extractable text for the selected provider. OCR is not supported yet.');
-  }
-  return result.slice(0, 50_000);
-}
-
-/**
- * Extract text from DOCX (ZIP with word/document.xml) using built-in zlib.
- * DOCX files are ZIP archives; word/document.xml contains the main body text
- * inside <w:t> elements.
- */
-async function extractDocxText(buffer: Buffer): Promise<string> {
-  const LOCAL_FILE_HEADER_SIG = 0x04034b50;
-  let offset = 0;
-  const xmlChunks: string[] = [];
-
-  while (offset + 30 < buffer.length) {
-    const sig = buffer.readUInt32LE(offset);
-    if (sig !== LOCAL_FILE_HEADER_SIG) break;
-
-    const compressionMethod = buffer.readUInt16LE(offset + 8);
-    const compressedSize = buffer.readUInt32LE(offset + 18);
-    const fileNameLength = buffer.readUInt16LE(offset + 26);
-    const extraLength = buffer.readUInt16LE(offset + 28);
-    const fileName = buffer.subarray(offset + 30, offset + 30 + fileNameLength).toString('utf8');
-    const dataOffset = offset + 30 + fileNameLength + extraLength;
-    const data = buffer.subarray(dataOffset, dataOffset + compressedSize);
-
-    if (fileName === 'word/document.xml') {
-      try {
-        const xmlBuffer: Buffer =
-          compressionMethod === 8
-            ? await inflateRawAsync(data)
-            : Buffer.from(data);
-        const xml = xmlBuffer.toString('utf8');
-        const wTMatches = xml.match(/<w:t[^>]*>([^<]*)<\/w:t>/g) ?? [];
-        xmlChunks.push(...wTMatches.map((m) => m.replace(/<[^>]+>/g, '')));
-      } catch {
-        // decompression failed; text stays empty
-      }
-      break;
-    }
-
-    const nextOffset = dataOffset + compressedSize;
-    if (nextOffset <= offset) break; // safety guard against infinite loop
-    offset = nextOffset;
-  }
-
-  const result = xmlChunks.join(' ').replace(/\s{2,}/g, ' ').trim();
-  return result || '[DOCX text extraction yielded no readable text for this document.]';
 }
 
 type InstallationSessionSnapshot = Awaited<ReturnType<ExtensionControlService['resolveInstallationSession']>>;
@@ -331,19 +236,6 @@ export class ExtensionFileUploadController {
   @UseInterceptors(
     FileInterceptor('file', {
       limits: { fileSize: MAX_FILE_SIZE_BYTES },
-      fileFilter: (_req, file, cb) => {
-        const mime = resolveMimeFromFilename(file.originalname, file.mimetype);
-        if (ALLOWED_MIME_TYPES.has(mime)) {
-          cb(null, true);
-        } else {
-          cb(
-            new BadRequestException(
-              `Unsupported file type "${file.originalname}". ${ALLOWED_TYPES_ERROR_SUFFIX}`,
-            ),
-            false,
-          );
-        }
-      },
     }),
   )
   async uploadAndAnswer(
@@ -353,6 +245,9 @@ export class ExtensionFileUploadController {
   ) {
     if (!file) {
       throw new BadRequestException('A file must be attached as multipart field "file".');
+    }
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      throw new BadRequestException(`File is too large. Maximum allowed size is ${MAX_FILE_SIZE_LABEL}.`);
     }
 
     const accessToken = parseBearerToken(authorization);
@@ -364,12 +259,6 @@ export class ExtensionFileUploadController {
       endpoint: '/extension/ai/upload',
     });
     const mime = resolveMimeFromFilename(file.originalname, file.mimetype);
-
-    if (!ALLOWED_MIME_TYPES.has(mime)) {
-      throw new BadRequestException(
-        `Unsupported file type "${file.originalname}". ${ALLOWED_TYPES_ERROR_SUFFIX}`,
-      );
-    }
 
     const session = buildInstallationRuntimeSession(installationSession);
     const promptText =
@@ -404,27 +293,19 @@ export class ExtensionFileUploadController {
       } else if (shouldUseRouterAiFileBlock({ provider, model, mime })) {
         contentType = 'text';
         messageContent = buildFileContentBlocks({ promptText, file, mime });
-      } else if (isTextMime(mime)) {
+      } else if (isTextLikeMime(mime)) {
         contentType = 'text';
         const textContent = file.buffer.toString('utf8');
         messageContent = `${promptText}\n\n---\n\n${textContent}`;
-      } else if (mime === 'application/pdf') {
-        contentType = 'text';
-        const extracted = extractPdfText(file.buffer);
-        messageContent = `${promptText}\n\n---\n\n${extracted}`;
-      } else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        contentType = 'text';
-        const extracted = await extractDocxText(file.buffer);
-        messageContent = `${promptText}\n\n---\n\n${extracted}`;
       } else {
         throw new BadRequestException(
-          `File type "${mime}" is allowed but has no extraction handler. This is a configuration error.`,
+          `File type "${mime}" is not supported by the selected provider. Use RouterAI for arbitrary file uploads.`,
         );
       }
     } catch (error) {
       if (error instanceof HttpException) throw error;
       throw new BadRequestException(
-        `Failed to process file "${file.originalname}". Ensure the file is valid and under 10 MB.`,
+        `Failed to process file "${file.originalname}". Ensure the file is valid and under ${MAX_FILE_SIZE_LABEL}.`,
       );
     }
 
