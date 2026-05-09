@@ -32,6 +32,16 @@ interface MulterFile {
   buffer: Buffer;
 }
 
+interface AiProxyFileContentBlock {
+  type: 'file';
+  file: {
+    filename: string;
+    file_data: string;
+  };
+}
+
+type UploadMessageContent = string | Array<AiProxyContentBlock | AiProxyFileContentBlock>;
+
 const inflateRawAsync = promisify(inflateRaw);
 
 const ALLOWED_MIME_TYPES = new Set([
@@ -154,9 +164,13 @@ function uniqueModels(models: Array<string | undefined>): string[] {
   return result;
 }
 
+function toDataUrl(mime: string, buffer: Buffer): string {
+  return `data:${mime};base64,${buffer.toString('base64')}`;
+}
+
 /**
- * Basic PDF text extraction using BT/ET operator scanning.
- * Works for text-based PDFs; returns placeholder for scanned/encrypted PDFs.
+ * Basic PDF text extraction fallback for providers that cannot accept file blocks.
+ * RouterAI upload uses file content blocks and does not rely on this parser.
  */
 function extractPdfText(buffer: Buffer): string {
   const raw = buffer.toString('latin1');
@@ -197,7 +211,10 @@ function extractPdfText(buffer: Buffer): string {
   }
 
   const result = textParts.join(' ').replace(/\s{2,}/g, ' ').trim();
-  return result || '[PDF text extraction yielded no readable text for this document.]';
+  if (!result) {
+    throw new BadRequestException('This PDF has no extractable text for the selected provider. OCR is not supported yet.');
+  }
+  return result.slice(0, 50_000);
 }
 
 /**
@@ -354,17 +371,16 @@ export class ExtensionFileUploadController {
       : bodyModel;
 
     let contentType: 'text' | 'image';
-    let messageContent: string | AiProxyContentBlock[];
+    let messageContent: UploadMessageContent;
 
     try {
       if (isImageMime(mime)) {
         contentType = 'image';
-        const base64 = file.buffer.toString('base64');
         messageContent = [
           { type: 'text' as const, text: promptText },
           {
             type: 'image_url' as const,
-            image_url: { url: `data:${mime};base64,${base64}`, detail: 'auto' as const },
+            image_url: { url: toDataUrl(mime, file.buffer), detail: 'auto' as const },
           },
         ];
       } else if (isTextMime(mime)) {
@@ -373,8 +389,21 @@ export class ExtensionFileUploadController {
         messageContent = `${promptText}\n\n---\n\n${textContent}`;
       } else if (mime === 'application/pdf') {
         contentType = 'text';
-        const extracted = extractPdfText(file.buffer);
-        messageContent = `${promptText}\n\n---\n\n${extracted}`;
+        if ((provider ?? 'routerai') === 'routerai' || model?.includes('/')) {
+          messageContent = [
+            { type: 'text' as const, text: `${promptText}\n\nAttached PDF: ${file.originalname}` },
+            {
+              type: 'file',
+              file: {
+                filename: file.originalname,
+                file_data: toDataUrl(mime, file.buffer),
+              },
+            },
+          ];
+        } else {
+          const extracted = extractPdfText(file.buffer);
+          messageContent = `${promptText}\n\n---\n\n${extracted}`;
+        }
       } else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         contentType = 'text';
         const extracted = await extractDocxText(file.buffer);
@@ -480,12 +509,12 @@ export class ExtensionFileUploadController {
     provider: AiProvider | undefined;
     model: string | undefined;
     contentType: 'text' | 'image';
-    messageContent: string | AiProxyContentBlock[];
+    messageContent: UploadMessageContent;
   }): Promise<AiProxyResult> {
     const baseRequest = {
       ...(input.provider ? { provider: input.provider } : {}),
       ...(input.model ? { model: input.model } : {}),
-      messages: [{ role: 'user' as const, content: input.messageContent }],
+      messages: [{ role: 'user' as const, content: input.messageContent as string | AiProxyContentBlock[] }],
       stream: false,
     };
 
@@ -515,7 +544,7 @@ export class ExtensionFileUploadController {
           return await this.aiProxyService.proxyForCurrentSession(input.session, {
             provider: 'routerai',
             model: candidate,
-            messages: [{ role: 'user', content: input.messageContent }],
+            messages: [{ role: 'user', content: input.messageContent as string | AiProxyContentBlock[] }],
             stream: false,
           });
         } catch (retryError) {
