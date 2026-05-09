@@ -118,6 +118,11 @@ function isImageMime(mime: string): boolean {
   return IMAGE_MIME_TYPES.has(mime);
 }
 
+function shouldUseRouterAiFileBlock(input: { provider: AiProvider | undefined; model: string | undefined; mime: string }): boolean {
+  if (isImageMime(input.mime)) return false;
+  return (input.provider ?? 'routerai') === 'routerai' || Boolean(input.model?.includes('/'));
+}
+
 function normalizeRouterAiModelId(model: string | undefined): string | undefined {
   const value = model?.trim();
   if (!value) return undefined;
@@ -166,6 +171,19 @@ function uniqueModels(models: Array<string | undefined>): string[] {
 
 function toDataUrl(mime: string, buffer: Buffer): string {
   return `data:${mime};base64,${buffer.toString('base64')}`;
+}
+
+function buildFileContentBlocks(input: { promptText: string; file: MulterFile; mime: string }): Array<AiProxyContentBlock | AiProxyFileContentBlock> {
+  return [
+    { type: 'text' as const, text: `${input.promptText}\n\nAttached file: ${input.file.originalname}` },
+    {
+      type: 'file',
+      file: {
+        filename: input.file.originalname,
+        file_data: toDataUrl(input.mime, input.file.buffer),
+      },
+    },
+  ];
 }
 
 /**
@@ -383,27 +401,17 @@ export class ExtensionFileUploadController {
             image_url: { url: toDataUrl(mime, file.buffer), detail: 'auto' as const },
           },
         ];
+      } else if (shouldUseRouterAiFileBlock({ provider, model, mime })) {
+        contentType = 'text';
+        messageContent = buildFileContentBlocks({ promptText, file, mime });
       } else if (isTextMime(mime)) {
         contentType = 'text';
         const textContent = file.buffer.toString('utf8');
         messageContent = `${promptText}\n\n---\n\n${textContent}`;
       } else if (mime === 'application/pdf') {
         contentType = 'text';
-        if ((provider ?? 'routerai') === 'routerai' || model?.includes('/')) {
-          messageContent = [
-            { type: 'text' as const, text: `${promptText}\n\nAttached PDF: ${file.originalname}` },
-            {
-              type: 'file',
-              file: {
-                filename: file.originalname,
-                file_data: toDataUrl(mime, file.buffer),
-              },
-            },
-          ];
-        } else {
-          const extracted = extractPdfText(file.buffer);
-          messageContent = `${promptText}\n\n---\n\n${extracted}`;
-        }
+        const extracted = extractPdfText(file.buffer);
+        messageContent = `${promptText}\n\n---\n\n${extracted}`;
       } else if (mime === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
         contentType = 'text';
         const extracted = await extractDocxText(file.buffer);
