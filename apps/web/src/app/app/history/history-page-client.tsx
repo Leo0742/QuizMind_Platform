@@ -7,6 +7,7 @@ import { type AiHistoryAttachment, type AiHistoryListResponse } from '@quizmind/
 import type { ExchangeRateSnapshot } from '../../../lib/exchange-rates';
 import { formatUtcDateTime } from '../../../lib/datetime';
 import { AiRequestDetailModal } from './ai-request-detail-modal';
+import { HistoryFilePreview } from './history-file-preview';
 import { getReadableModelName } from './history-model-display';
 import { buildHistoryPromptDisplay, getHistoryTimelineSummary } from './history-prompt-display';
 import { useAutoRefresh } from '../../../lib/use-auto-refresh';
@@ -41,7 +42,6 @@ function requestTypeDot(requestType: string): string {
   if (requestType === 'file') return 'event-dot event-dot--activity';
   return 'event-dot event-dot--info';
 }
-
 
 function listImageAttachments(item: AiHistoryListResponse['items'][number]): AiHistoryAttachment[] {
   return (item.attachments ?? []).filter((attachment) => attachment.kind === 'image' && attachment.role === 'prompt' && !attachment.expired && !attachment.deleted);
@@ -298,10 +298,8 @@ export function HistoryPageClient(props: HistoryPageClientProps) {
                   {imageAttachments.length === 0 && hasUnavailableImage ? (
                     <span className="event-row__context">{th.imageUnavailable}</span>
                   ) : null}
-                  {item.fileMetadata ? (
-                    <span className="event-row__context">
-                      {item.fileMetadata.originalName} &middot; {(item.fileMetadata.sizeBytes / 1024).toFixed(0)} KB
-                    </span>
+                  {imageAttachments.length === 0 && item.fileMetadata ? (
+                    <HistoryFilePreview itemId={item.id} fileMetadata={item.fileMetadata} compact />
                   ) : null}
                 </div>
                 <div className="event-row__meta">
