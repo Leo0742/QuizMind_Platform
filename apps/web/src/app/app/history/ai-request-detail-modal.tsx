@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { type AiHistoryAttachment, type AiHistoryDetail } from '@quizmind/contracts';
 import { buildHistoryPromptDisplay } from './history-prompt-display';
+import { HistoryFilePreview } from './history-file-preview';
 import { getReadableModelName } from './history-model-display';
 import { formatHistoryDuration } from './history-duration';
 import { formatUtcDateTime } from '../../../lib/datetime';
@@ -254,7 +255,10 @@ export function AiRequestDetailModal({ id, onClose, exchangeRates }: Props) {
                     ))}
                   </div>
                 )}
-                {!hasPromptText && !hasPromptImages && <p style={{ opacity: 0.45, fontSize: '0.82rem', margin: 0 }}>{td.noPrompt}</p>}
+                {!hasPromptImages && detail.fileMetadata ? (
+                  <HistoryFilePreview itemId={detail.id} fileMetadata={detail.fileMetadata} />
+                ) : null}
+                {!hasPromptText && !hasPromptImages && !detail.fileMetadata && <p style={{ opacity: 0.45, fontSize: '0.82rem', margin: 0 }}>{td.noPrompt}</p>}
                 {promptDisplay.promptInstructionText && (
                   <ExpandableSection label={td.promptInstruction} content={promptDisplay.promptInstructionText} />
                 )}
