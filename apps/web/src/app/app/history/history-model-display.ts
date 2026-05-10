@@ -5,15 +5,24 @@ function titleToken(token: string): string {
   return token.charAt(0).toUpperCase() + token.slice(1);
 }
 
+function stripTechnicalModelSuffixes(value: string): string {
+  return value
+    // RouterAI can return versioned ids such as openai/gpt-5.3-chat-20260303.
+    // The date is useful internally but noisy in UI history cards.
+    .replace(/[-_ ]+(?:19|20)\d{6}$/i, '')
+    .replace(/[-_ ]+latest$/i, '')
+    .trim();
+}
+
 export function getReadableModelName(modelId: string): string {
   const normalized = (modelId || '').trim();
   if (!normalized) return 'Unknown model';
 
-  const withoutSuffix = normalized.replace(/:free$/i, '');
+  const withoutSuffix = stripTechnicalModelSuffixes(normalized.replace(/:free$/i, ''));
   const segments = withoutSuffix.split('/').filter(Boolean);
-  const leaf = (segments[segments.length - 1] || withoutSuffix)
+  const leaf = stripTechnicalModelSuffixes((segments[segments.length - 1] || withoutSuffix)
     .replace(/[-_]+/g, ' ')
-    .trim();
+    .trim());
 
   if (!leaf) return withoutSuffix;
 
