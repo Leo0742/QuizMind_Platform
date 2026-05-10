@@ -67,7 +67,11 @@ function getHistoryPriceMeta(item: AiHistoryListResponse['items'][number], displ
     return { label: chargedLabel, value: formatUsdAmountByPreference(item.chargedCostUsd!, displayCurrency, exchangeRates), billed: true };
   }
   if (hasEstimatedUsd) {
-    return { label: approximateLabel, value: formatUsdAmountByPreference(estimated, displayCurrency, exchangeRates), billed: false };
+    return {
+      label: item.status === 'success' ? chargedLabel : approximateLabel,
+      value: formatUsdAmountByPreference(estimated, displayCurrency, exchangeRates),
+      billed: item.status === 'success',
+    };
   }
   return null;
 }
