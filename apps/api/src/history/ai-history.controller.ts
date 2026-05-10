@@ -22,6 +22,22 @@ const fallbackExtensionByMimeType: Record<string, string> = {
   'image/jpeg': 'jpg',
   'image/png': 'png',
   'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/svg+xml': 'svg',
+  'application/pdf': 'pdf',
+  'text/plain': 'txt',
+  'text/markdown': 'md',
+  'text/csv': 'csv',
+  'application/json': 'json',
+  'application/xml': 'xml',
+  'text/xml': 'xml',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+  'application/msword': 'doc',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': 'xlsx',
+  'application/vnd.ms-excel': 'xls',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation': 'pptx',
+  'application/vnd.ms-powerpoint': 'ppt',
+  'application/zip': 'zip',
 };
 
 function ok<T>(data: T): ApiSuccess<T> {
@@ -40,7 +56,7 @@ function parsePositiveInt(value: string | undefined, fallback: number): number {
 }
 
 function extensionForMimeType(mimeType: string): string {
-  return fallbackExtensionByMimeType[mimeType] ?? 'bin';
+  return fallbackExtensionByMimeType[mimeType.toLowerCase()] ?? 'bin';
 }
 
 export function sanitizeAttachmentFilename(originalName: string, mimeType: string): string {
