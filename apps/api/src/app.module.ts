@@ -8,6 +8,7 @@ import { AiProxyService } from './ai/ai-proxy.service';
 import { OpenRouterCatalogService } from './ai/openrouter-catalog.service';
 import { RouterAiCatalogService } from './ai/routerai-catalog.service';
 import { AiHistoryController } from './history/ai-history.controller';
+import { AiHistoryFileController } from './history/ai-history-file.controller';
 import { AiHistoryRepository } from './history/ai-history.repository';
 import { AiHistoryService } from './history/ai-history.service';
 import { HistoryBlobService } from './history/history-blob.service';
@@ -70,6 +71,7 @@ import { UserBillingOverrideRepository } from './ai/user-billing-override.reposi
     ProviderCredentialController,
     AiProxyController,
     AiHistoryController,
+    AiHistoryFileController,
   ],
   providers: [
     AdminBootstrapService,
