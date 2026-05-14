@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { Prisma } from '@quizmind/database';
+import { Prisma, type PrismaClient } from '@quizmind/database';
 
 import { PrismaService } from '../database/prisma.service';
 
@@ -23,29 +23,41 @@ const userExtensionScenarioSelect = {
 
 export type UserExtensionScenarioRecord = Prisma.UserExtensionScenarioGetPayload<{ select: typeof userExtensionScenarioSelect }>;
 
+type DbClient = PrismaService | Prisma.TransactionClient;
+
 @Injectable()
 export class ExtensionScenariosRepository {
   constructor(@Inject(PrismaService) private readonly prisma: PrismaService) {}
 
-  listActiveByUserId(userId: string) {
-    return this.prisma.userExtensionScenario.findMany({ where: { userId, deletedAt: null }, orderBy: [{ menuOrder: 'asc' }, { updatedAt: 'asc' }, { createdAt: 'asc' }], select: userExtensionScenarioSelect });
+  private model(db?: DbClient) {
+    return (db ?? this.prisma).userExtensionScenario;
   }
 
-  countActiveByUserId(userId: string) {
-    return this.prisma.userExtensionScenario.count({ where: { userId, deletedAt: null } });
+  listAnyByUserId(userId: string, db?: DbClient) {
+    return this.model(db).findMany({ where: { userId }, orderBy: [{ updatedAt: 'asc' }, { createdAt: 'asc' }], select: userExtensionScenarioSelect });
   }
 
-  findAnyByUserAndScenarioId(userId: string, scenarioId: string) {
-    return this.prisma.userExtensionScenario.findUnique({ where: { userId_scenarioId: { userId, scenarioId } }, select: userExtensionScenarioSelect });
+  listActiveByUserId(userId: string, db?: DbClient) {
+    return this.model(db).findMany({ where: { userId, deletedAt: null }, orderBy: [{ menuOrder: 'asc' }, { updatedAt: 'asc' }, { createdAt: 'asc' }], select: userExtensionScenarioSelect });
   }
 
-  updateByUserAndScenarioId(userId: string, scenarioId: string, data: Prisma.UserExtensionScenarioUpdateInput) {
-    return this.prisma.userExtensionScenario.update({ where: { userId_scenarioId: { userId, scenarioId } }, data, select: userExtensionScenarioSelect });
+  countActiveByUserId(userId: string, db?: DbClient) {
+    return this.model(db).count({ where: { userId, deletedAt: null } });
   }
 
-  create(data: Prisma.UserExtensionScenarioCreateInput) {
-    return this.prisma.userExtensionScenario.create({ data, select: userExtensionScenarioSelect });
+  findAnyByUserAndScenarioId(userId: string, scenarioId: string, db?: DbClient) {
+    return this.model(db).findUnique({ where: { userId_scenarioId: { userId, scenarioId } }, select: userExtensionScenarioSelect });
   }
 
-  tx() { return this.prisma; }
+  create(data: Prisma.UserExtensionScenarioCreateInput, db?: DbClient) {
+    return this.model(db).create({ data, select: userExtensionScenarioSelect });
+  }
+
+  updateByUserAndScenarioId(userId: string, scenarioId: string, data: Prisma.UserExtensionScenarioUpdateInput, db?: DbClient) {
+    return this.model(db).update({ where: { userId_scenarioId: { userId, scenarioId } }, data, select: userExtensionScenarioSelect });
+  }
+
+  transaction<T>(fn: (tx: Prisma.TransactionClient) => Promise<T>) {
+    return this.prisma.$transaction((tx) => fn(tx));
+  }
 }

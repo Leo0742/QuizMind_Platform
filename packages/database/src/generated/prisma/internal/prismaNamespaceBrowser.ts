@@ -80,6 +80,7 @@ export const ModelName = {
   ExtensionCompatibilityRule: 'ExtensionCompatibilityRule',
   ExtensionInstallation: 'ExtensionInstallation',
   ExtensionInstallationSession: 'ExtensionInstallationSession',
+  UserExtensionScenario: 'UserExtensionScenario',
   ProviderCredential: 'ProviderCredential',
   AiProviderPolicy: 'AiProviderPolicy',
   ExtensionTelemetry: 'ExtensionTelemetry',
@@ -568,6 +569,27 @@ export const ExtensionInstallationSessionScalarFieldEnum = {
 } as const
 
 export type ExtensionInstallationSessionScalarFieldEnum = (typeof ExtensionInstallationSessionScalarFieldEnum)[keyof typeof ExtensionInstallationSessionScalarFieldEnum]
+
+
+export const UserExtensionScenarioScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  scenarioId: 'scenarioId',
+  schemaVersion: 'schemaVersion',
+  name: 'name',
+  description: 'description',
+  buttonLabel: 'buttonLabel',
+  icon: 'icon',
+  enabled: 'enabled',
+  showInSelectionMenu: 'showInSelectionMenu',
+  menuOrder: 'menuOrder',
+  configJson: 'configJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type UserExtensionScenarioScalarFieldEnum = (typeof UserExtensionScenarioScalarFieldEnum)[keyof typeof UserExtensionScenarioScalarFieldEnum]
 
 
 export const ProviderCredentialScalarFieldEnum = {

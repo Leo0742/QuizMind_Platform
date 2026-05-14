@@ -260,6 +260,7 @@ export type UserWhereInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionListRelationFilter
   extensionInstallations?: Prisma.ExtensionInstallationListRelationFilter
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionListRelationFilter
+  extensionScenarios?: Prisma.UserExtensionScenarioListRelationFilter
   providerCredentials?: Prisma.ProviderCredentialListRelationFilter
   aiRequests?: Prisma.AiRequestListRelationFilter
   aiRequestEvents?: Prisma.AiRequestEventListRelationFilter
@@ -302,6 +303,7 @@ export type UserOrderByWithRelationInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionOrderByRelationAggregateInput
   extensionInstallations?: Prisma.ExtensionInstallationOrderByRelationAggregateInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionOrderByRelationAggregateInput
+  extensionScenarios?: Prisma.UserExtensionScenarioOrderByRelationAggregateInput
   providerCredentials?: Prisma.ProviderCredentialOrderByRelationAggregateInput
   aiRequests?: Prisma.AiRequestOrderByRelationAggregateInput
   aiRequestEvents?: Prisma.AiRequestEventOrderByRelationAggregateInput
@@ -347,6 +349,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   remoteConfigVersions?: Prisma.RemoteConfigVersionListRelationFilter
   extensionInstallations?: Prisma.ExtensionInstallationListRelationFilter
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionListRelationFilter
+  extensionScenarios?: Prisma.UserExtensionScenarioListRelationFilter
   providerCredentials?: Prisma.ProviderCredentialListRelationFilter
   aiRequests?: Prisma.AiRequestListRelationFilter
   aiRequestEvents?: Prisma.AiRequestEventListRelationFilter
@@ -429,6 +432,7 @@ export type UserCreateInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -471,6 +475,7 @@ export type UserUncheckedCreateInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -513,6 +518,7 @@ export type UserUpdateInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -555,6 +561,7 @@ export type UserUncheckedUpdateInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -958,6 +965,20 @@ export type UserUpdateOneRequiredWithoutExtensionInstallationSessionsNestedInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutExtensionInstallationSessionsInput, Prisma.UserUpdateWithoutExtensionInstallationSessionsInput>, Prisma.UserUncheckedUpdateWithoutExtensionInstallationSessionsInput>
 }
 
+export type UserCreateNestedOneWithoutExtensionScenariosInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutExtensionScenariosInput, Prisma.UserUncheckedCreateWithoutExtensionScenariosInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutExtensionScenariosInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutExtensionScenariosNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutExtensionScenariosInput, Prisma.UserUncheckedCreateWithoutExtensionScenariosInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutExtensionScenariosInput
+  upsert?: Prisma.UserUpsertWithoutExtensionScenariosInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutExtensionScenariosInput, Prisma.UserUpdateWithoutExtensionScenariosInput>, Prisma.UserUncheckedUpdateWithoutExtensionScenariosInput>
+}
+
 export type UserCreateNestedOneWithoutProviderCredentialsInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutProviderCredentialsInput, Prisma.UserUncheckedCreateWithoutProviderCredentialsInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutProviderCredentialsInput
@@ -1087,6 +1108,7 @@ export type UserCreateWithoutPlatformSettingsUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -1128,6 +1150,7 @@ export type UserUncheckedCreateWithoutPlatformSettingsUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -1185,6 +1208,7 @@ export type UserUpdateWithoutPlatformSettingsUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -1226,6 +1250,7 @@ export type UserUncheckedUpdateWithoutPlatformSettingsUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -1266,6 +1291,7 @@ export type UserCreateWithoutAccountsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -1307,6 +1333,7 @@ export type UserUncheckedCreateWithoutAccountsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -1364,6 +1391,7 @@ export type UserUpdateWithoutAccountsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -1405,6 +1433,7 @@ export type UserUncheckedUpdateWithoutAccountsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -1446,6 +1475,7 @@ export type UserCreateWithoutSessionsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -1487,6 +1517,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -1544,6 +1575,7 @@ export type UserUpdateWithoutSessionsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -1585,6 +1617,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -1626,6 +1659,7 @@ export type UserCreateWithoutEmailVerificationsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -1667,6 +1701,7 @@ export type UserUncheckedCreateWithoutEmailVerificationsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -1724,6 +1759,7 @@ export type UserUpdateWithoutEmailVerificationsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -1765,6 +1801,7 @@ export type UserUncheckedUpdateWithoutEmailVerificationsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -1806,6 +1843,7 @@ export type UserCreateWithoutPasswordResetsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -1847,6 +1885,7 @@ export type UserUncheckedCreateWithoutPasswordResetsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -1904,6 +1943,7 @@ export type UserUpdateWithoutPasswordResetsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -1945,6 +1985,7 @@ export type UserUncheckedUpdateWithoutPasswordResetsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -1987,6 +2028,7 @@ export type UserCreateWithoutWalletInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -2028,6 +2070,7 @@ export type UserUncheckedCreateWithoutWalletInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -2085,6 +2128,7 @@ export type UserUpdateWithoutWalletInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -2126,6 +2170,7 @@ export type UserUncheckedUpdateWithoutWalletInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -2167,6 +2212,7 @@ export type UserCreateWithoutBillingOverrideInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -2208,6 +2254,7 @@ export type UserUncheckedCreateWithoutBillingOverrideInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -2265,6 +2312,7 @@ export type UserUpdateWithoutBillingOverrideInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -2306,6 +2354,7 @@ export type UserUncheckedUpdateWithoutBillingOverrideInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -2347,6 +2396,7 @@ export type UserCreateWithoutWalletAdjustmentBatchesCreatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -2388,6 +2438,7 @@ export type UserUncheckedCreateWithoutWalletAdjustmentBatchesCreatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -2445,6 +2496,7 @@ export type UserUpdateWithoutWalletAdjustmentBatchesCreatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -2486,6 +2538,7 @@ export type UserUncheckedUpdateWithoutWalletAdjustmentBatchesCreatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -2526,6 +2579,7 @@ export type UserCreateWithoutMembershipsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -2567,6 +2621,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -2624,6 +2679,7 @@ export type UserUpdateWithoutMembershipsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -2665,6 +2721,7 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -2706,6 +2763,7 @@ export type UserCreateWithoutSystemRoleAssignmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -2747,6 +2805,7 @@ export type UserUncheckedCreateWithoutSystemRoleAssignmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -2804,6 +2863,7 @@ export type UserUpdateWithoutSystemRoleAssignmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -2845,6 +2905,7 @@ export type UserUncheckedUpdateWithoutSystemRoleAssignmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -2887,6 +2948,7 @@ export type UserCreateWithoutAiRequestsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentCreateNestedManyWithoutUserInput
@@ -2928,6 +2990,7 @@ export type UserUncheckedCreateWithoutAiRequestsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedCreateNestedManyWithoutUserInput
@@ -2985,6 +3048,7 @@ export type UserUpdateWithoutAiRequestsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUpdateManyWithoutUserNestedInput
@@ -3026,6 +3090,7 @@ export type UserUncheckedUpdateWithoutAiRequestsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedUpdateManyWithoutUserNestedInput
@@ -3067,6 +3132,7 @@ export type UserCreateWithoutAiRequestEventsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentCreateNestedManyWithoutUserInput
@@ -3108,6 +3174,7 @@ export type UserUncheckedCreateWithoutAiRequestEventsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedCreateNestedManyWithoutUserInput
@@ -3165,6 +3232,7 @@ export type UserUpdateWithoutAiRequestEventsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUpdateManyWithoutUserNestedInput
@@ -3206,6 +3274,7 @@ export type UserUncheckedUpdateWithoutAiRequestEventsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedUpdateManyWithoutUserNestedInput
@@ -3247,6 +3316,7 @@ export type UserCreateWithoutAiRequestAttachmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -3288,6 +3358,7 @@ export type UserUncheckedCreateWithoutAiRequestAttachmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -3345,6 +3416,7 @@ export type UserUpdateWithoutAiRequestAttachmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -3386,6 +3458,7 @@ export type UserUncheckedUpdateWithoutAiRequestAttachmentsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -3427,6 +3500,7 @@ export type UserCreateWithoutAiUsageDailyRollupsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -3468,6 +3542,7 @@ export type UserUncheckedCreateWithoutAiUsageDailyRollupsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -3525,6 +3600,7 @@ export type UserUpdateWithoutAiUsageDailyRollupsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -3566,6 +3642,7 @@ export type UserUncheckedUpdateWithoutAiUsageDailyRollupsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -3606,6 +3683,7 @@ export type UserCreateWithoutFeatureFlagOverridesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -3647,6 +3725,7 @@ export type UserUncheckedCreateWithoutFeatureFlagOverridesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -3704,6 +3783,7 @@ export type UserUpdateWithoutFeatureFlagOverridesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -3745,6 +3825,7 @@ export type UserUncheckedUpdateWithoutFeatureFlagOverridesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -3786,6 +3867,7 @@ export type UserCreateWithoutRemoteConfigVersionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideCreateNestedManyWithoutUserInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -3827,6 +3909,7 @@ export type UserUncheckedCreateWithoutRemoteConfigVersionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedCreateNestedManyWithoutUserInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -3884,6 +3967,7 @@ export type UserUpdateWithoutRemoteConfigVersionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUpdateManyWithoutUserNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -3925,6 +4009,7 @@ export type UserUncheckedUpdateWithoutRemoteConfigVersionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -3966,6 +4051,7 @@ export type UserCreateWithoutExtensionInstallationsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideCreateNestedManyWithoutUserInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -4007,6 +4093,7 @@ export type UserUncheckedCreateWithoutExtensionInstallationsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedCreateNestedManyWithoutUserInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -4064,6 +4151,7 @@ export type UserUpdateWithoutExtensionInstallationsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUpdateManyWithoutUserNestedInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -4105,6 +4193,7 @@ export type UserUncheckedUpdateWithoutExtensionInstallationsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedUpdateManyWithoutUserNestedInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -4146,6 +4235,7 @@ export type UserCreateWithoutExtensionInstallationSessionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideCreateNestedManyWithoutUserInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -4187,6 +4277,7 @@ export type UserUncheckedCreateWithoutExtensionInstallationSessionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedCreateNestedManyWithoutUserInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -4244,6 +4335,7 @@ export type UserUpdateWithoutExtensionInstallationSessionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUpdateManyWithoutUserNestedInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -4285,6 +4377,191 @@ export type UserUncheckedUpdateWithoutExtensionInstallationSessionsInput = {
   featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedUpdateManyWithoutUserNestedInput
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
+  providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
+  aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
+  aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
+  aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedUpdateManyWithoutUserNestedInput
+  aiUsageDailyRollups?: Prisma.AiUsageDailyRollupUncheckedUpdateManyWithoutUserNestedInput
+  aiProviderPoliciesUpdated?: Prisma.AiProviderPolicyUncheckedUpdateManyWithoutUpdatedByNestedInput
+  supportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutRequesterNestedInput
+  assignedSupportTickets?: Prisma.SupportTicketUncheckedUpdateManyWithoutAssignedToNestedInput
+  supportTicketPresetFavorites?: Prisma.SupportTicketPresetFavoriteUncheckedUpdateManyWithoutUserNestedInput
+  supportImpersonationSessionsStarted?: Prisma.SupportImpersonationSessionUncheckedUpdateManyWithoutSupportActorNestedInput
+  supportImpersonationSessionsTargeted?: Prisma.SupportImpersonationSessionUncheckedUpdateManyWithoutTargetUserNestedInput
+  wallet?: Prisma.WalletUncheckedUpdateOneWithoutUserNestedInput
+  billingOverride?: Prisma.UserBillingOverrideUncheckedUpdateOneWithoutUserNestedInput
+  walletAdjustmentBatchesCreated?: Prisma.AdminWalletAdjustmentBatchUncheckedUpdateManyWithoutActorNestedInput
+  platformSettingsUpdated?: Prisma.PlatformSettingUncheckedUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserCreateWithoutExtensionScenariosInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  emailVerifiedAt?: Date | string | null
+  displayName?: string | null
+  avatarUrl?: string | null
+  timezone?: string | null
+  locale?: string | null
+  uiPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  suspendedAt?: Date | string | null
+  suspendReason?: string | null
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  emailVerifications?: Prisma.EmailVerificationCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetCreateNestedManyWithoutUserInput
+  systemRoleAssignments?: Prisma.UserSystemRoleCreateNestedManyWithoutUserInput
+  memberships?: Prisma.WorkspaceMembershipCreateNestedManyWithoutUserInput
+  featureFlagOverrides?: Prisma.FeatureFlagOverrideCreateNestedManyWithoutUserInput
+  remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
+  extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
+  extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
+  aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
+  aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
+  aiRequestAttachments?: Prisma.AiRequestAttachmentCreateNestedManyWithoutUserInput
+  aiUsageDailyRollups?: Prisma.AiUsageDailyRollupCreateNestedManyWithoutUserInput
+  aiProviderPoliciesUpdated?: Prisma.AiProviderPolicyCreateNestedManyWithoutUpdatedByInput
+  supportTickets?: Prisma.SupportTicketCreateNestedManyWithoutRequesterInput
+  assignedSupportTickets?: Prisma.SupportTicketCreateNestedManyWithoutAssignedToInput
+  supportTicketPresetFavorites?: Prisma.SupportTicketPresetFavoriteCreateNestedManyWithoutUserInput
+  supportImpersonationSessionsStarted?: Prisma.SupportImpersonationSessionCreateNestedManyWithoutSupportActorInput
+  supportImpersonationSessionsTargeted?: Prisma.SupportImpersonationSessionCreateNestedManyWithoutTargetUserInput
+  wallet?: Prisma.WalletCreateNestedOneWithoutUserInput
+  billingOverride?: Prisma.UserBillingOverrideCreateNestedOneWithoutUserInput
+  walletAdjustmentBatchesCreated?: Prisma.AdminWalletAdjustmentBatchCreateNestedManyWithoutActorInput
+  platformSettingsUpdated?: Prisma.PlatformSettingCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserUncheckedCreateWithoutExtensionScenariosInput = {
+  id?: string
+  email: string
+  passwordHash?: string | null
+  emailVerifiedAt?: Date | string | null
+  displayName?: string | null
+  avatarUrl?: string | null
+  timezone?: string | null
+  locale?: string | null
+  uiPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  suspendedAt?: Date | string | null
+  suspendReason?: string | null
+  lastLoginAt?: Date | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  accounts?: Prisma.AccountUncheckedCreateNestedManyWithoutUserInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  emailVerifications?: Prisma.EmailVerificationUncheckedCreateNestedManyWithoutUserInput
+  passwordResets?: Prisma.PasswordResetUncheckedCreateNestedManyWithoutUserInput
+  systemRoleAssignments?: Prisma.UserSystemRoleUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.WorkspaceMembershipUncheckedCreateNestedManyWithoutUserInput
+  featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedCreateNestedManyWithoutUserInput
+  remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
+  extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
+  extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
+  aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
+  aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
+  aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedCreateNestedManyWithoutUserInput
+  aiUsageDailyRollups?: Prisma.AiUsageDailyRollupUncheckedCreateNestedManyWithoutUserInput
+  aiProviderPoliciesUpdated?: Prisma.AiProviderPolicyUncheckedCreateNestedManyWithoutUpdatedByInput
+  supportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutRequesterInput
+  assignedSupportTickets?: Prisma.SupportTicketUncheckedCreateNestedManyWithoutAssignedToInput
+  supportTicketPresetFavorites?: Prisma.SupportTicketPresetFavoriteUncheckedCreateNestedManyWithoutUserInput
+  supportImpersonationSessionsStarted?: Prisma.SupportImpersonationSessionUncheckedCreateNestedManyWithoutSupportActorInput
+  supportImpersonationSessionsTargeted?: Prisma.SupportImpersonationSessionUncheckedCreateNestedManyWithoutTargetUserInput
+  wallet?: Prisma.WalletUncheckedCreateNestedOneWithoutUserInput
+  billingOverride?: Prisma.UserBillingOverrideUncheckedCreateNestedOneWithoutUserInput
+  walletAdjustmentBatchesCreated?: Prisma.AdminWalletAdjustmentBatchUncheckedCreateNestedManyWithoutActorInput
+  platformSettingsUpdated?: Prisma.PlatformSettingUncheckedCreateNestedManyWithoutUpdatedByInput
+}
+
+export type UserCreateOrConnectWithoutExtensionScenariosInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutExtensionScenariosInput, Prisma.UserUncheckedCreateWithoutExtensionScenariosInput>
+}
+
+export type UserUpsertWithoutExtensionScenariosInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutExtensionScenariosInput, Prisma.UserUncheckedUpdateWithoutExtensionScenariosInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutExtensionScenariosInput, Prisma.UserUncheckedCreateWithoutExtensionScenariosInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutExtensionScenariosInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutExtensionScenariosInput, Prisma.UserUncheckedUpdateWithoutExtensionScenariosInput>
+}
+
+export type UserUpdateWithoutExtensionScenariosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uiPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  emailVerifications?: Prisma.EmailVerificationUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetUpdateManyWithoutUserNestedInput
+  systemRoleAssignments?: Prisma.UserSystemRoleUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.WorkspaceMembershipUpdateManyWithoutUserNestedInput
+  featureFlagOverrides?: Prisma.FeatureFlagOverrideUpdateManyWithoutUserNestedInput
+  remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
+  extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
+  extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
+  aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
+  aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
+  aiRequestAttachments?: Prisma.AiRequestAttachmentUpdateManyWithoutUserNestedInput
+  aiUsageDailyRollups?: Prisma.AiUsageDailyRollupUpdateManyWithoutUserNestedInput
+  aiProviderPoliciesUpdated?: Prisma.AiProviderPolicyUpdateManyWithoutUpdatedByNestedInput
+  supportTickets?: Prisma.SupportTicketUpdateManyWithoutRequesterNestedInput
+  assignedSupportTickets?: Prisma.SupportTicketUpdateManyWithoutAssignedToNestedInput
+  supportTicketPresetFavorites?: Prisma.SupportTicketPresetFavoriteUpdateManyWithoutUserNestedInput
+  supportImpersonationSessionsStarted?: Prisma.SupportImpersonationSessionUpdateManyWithoutSupportActorNestedInput
+  supportImpersonationSessionsTargeted?: Prisma.SupportImpersonationSessionUpdateManyWithoutTargetUserNestedInput
+  wallet?: Prisma.WalletUpdateOneWithoutUserNestedInput
+  billingOverride?: Prisma.UserBillingOverrideUpdateOneWithoutUserNestedInput
+  walletAdjustmentBatchesCreated?: Prisma.AdminWalletAdjustmentBatchUpdateManyWithoutActorNestedInput
+  platformSettingsUpdated?: Prisma.PlatformSettingUpdateManyWithoutUpdatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutExtensionScenariosInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  emailVerifiedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  displayName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  avatarUrl?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  timezone?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locale?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  uiPreferences?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  suspendedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  suspendReason?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  lastLoginAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  accounts?: Prisma.AccountUncheckedUpdateManyWithoutUserNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  emailVerifications?: Prisma.EmailVerificationUncheckedUpdateManyWithoutUserNestedInput
+  passwordResets?: Prisma.PasswordResetUncheckedUpdateManyWithoutUserNestedInput
+  systemRoleAssignments?: Prisma.UserSystemRoleUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.WorkspaceMembershipUncheckedUpdateManyWithoutUserNestedInput
+  featureFlagOverrides?: Prisma.FeatureFlagOverrideUncheckedUpdateManyWithoutUserNestedInput
+  remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
+  extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
+  extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -4327,6 +4604,7 @@ export type UserCreateWithoutProviderCredentialsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentCreateNestedManyWithoutUserInput
@@ -4368,6 +4646,7 @@ export type UserUncheckedCreateWithoutProviderCredentialsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedCreateNestedManyWithoutUserInput
@@ -4425,6 +4704,7 @@ export type UserUpdateWithoutProviderCredentialsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUpdateManyWithoutUserNestedInput
@@ -4466,6 +4746,7 @@ export type UserUncheckedUpdateWithoutProviderCredentialsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
   aiRequestAttachments?: Prisma.AiRequestAttachmentUncheckedUpdateManyWithoutUserNestedInput
@@ -4507,6 +4788,7 @@ export type UserCreateWithoutAiProviderPoliciesUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -4548,6 +4830,7 @@ export type UserUncheckedCreateWithoutAiProviderPoliciesUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -4605,6 +4888,7 @@ export type UserUpdateWithoutAiProviderPoliciesUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -4646,6 +4930,7 @@ export type UserUncheckedUpdateWithoutAiProviderPoliciesUpdatedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -4687,6 +4972,7 @@ export type UserCreateWithoutSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -4728,6 +5014,7 @@ export type UserUncheckedCreateWithoutSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -4774,6 +5061,7 @@ export type UserCreateWithoutAssignedSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -4815,6 +5103,7 @@ export type UserUncheckedCreateWithoutAssignedSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -4872,6 +5161,7 @@ export type UserUpdateWithoutSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -4913,6 +5203,7 @@ export type UserUncheckedUpdateWithoutSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -4965,6 +5256,7 @@ export type UserUpdateWithoutAssignedSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -5006,6 +5298,7 @@ export type UserUncheckedUpdateWithoutAssignedSupportTicketsInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -5047,6 +5340,7 @@ export type UserCreateWithoutSupportTicketPresetFavoritesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -5088,6 +5382,7 @@ export type UserUncheckedCreateWithoutSupportTicketPresetFavoritesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -5145,6 +5440,7 @@ export type UserUpdateWithoutSupportTicketPresetFavoritesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -5186,6 +5482,7 @@ export type UserUncheckedUpdateWithoutSupportTicketPresetFavoritesInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -5227,6 +5524,7 @@ export type UserCreateWithoutSupportImpersonationSessionsStartedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -5268,6 +5566,7 @@ export type UserUncheckedCreateWithoutSupportImpersonationSessionsStartedInput =
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -5314,6 +5613,7 @@ export type UserCreateWithoutSupportImpersonationSessionsTargetedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventCreateNestedManyWithoutUserInput
@@ -5355,6 +5655,7 @@ export type UserUncheckedCreateWithoutSupportImpersonationSessionsTargetedInput 
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedCreateNestedManyWithoutPublishedByInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedCreateNestedManyWithoutUserInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedCreateNestedManyWithoutUserInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedCreateNestedManyWithoutUserInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedCreateNestedManyWithoutUserInput
   aiRequests?: Prisma.AiRequestUncheckedCreateNestedManyWithoutUserInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedCreateNestedManyWithoutUserInput
@@ -5412,6 +5713,7 @@ export type UserUpdateWithoutSupportImpersonationSessionsStartedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -5453,6 +5755,7 @@ export type UserUncheckedUpdateWithoutSupportImpersonationSessionsStartedInput =
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -5505,6 +5808,7 @@ export type UserUpdateWithoutSupportImpersonationSessionsTargetedInput = {
   remoteConfigVersions?: Prisma.RemoteConfigVersionUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUpdateManyWithoutUserNestedInput
@@ -5546,6 +5850,7 @@ export type UserUncheckedUpdateWithoutSupportImpersonationSessionsTargetedInput 
   remoteConfigVersions?: Prisma.RemoteConfigVersionUncheckedUpdateManyWithoutPublishedByNestedInput
   extensionInstallations?: Prisma.ExtensionInstallationUncheckedUpdateManyWithoutUserNestedInput
   extensionInstallationSessions?: Prisma.ExtensionInstallationSessionUncheckedUpdateManyWithoutUserNestedInput
+  extensionScenarios?: Prisma.UserExtensionScenarioUncheckedUpdateManyWithoutUserNestedInput
   providerCredentials?: Prisma.ProviderCredentialUncheckedUpdateManyWithoutUserNestedInput
   aiRequests?: Prisma.AiRequestUncheckedUpdateManyWithoutUserNestedInput
   aiRequestEvents?: Prisma.AiRequestEventUncheckedUpdateManyWithoutUserNestedInput
@@ -5578,6 +5883,7 @@ export type UserCountOutputType = {
   remoteConfigVersions: number
   extensionInstallations: number
   extensionInstallationSessions: number
+  extensionScenarios: number
   providerCredentials: number
   aiRequests: number
   aiRequestEvents: number
@@ -5604,6 +5910,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   remoteConfigVersions?: boolean | UserCountOutputTypeCountRemoteConfigVersionsArgs
   extensionInstallations?: boolean | UserCountOutputTypeCountExtensionInstallationsArgs
   extensionInstallationSessions?: boolean | UserCountOutputTypeCountExtensionInstallationSessionsArgs
+  extensionScenarios?: boolean | UserCountOutputTypeCountExtensionScenariosArgs
   providerCredentials?: boolean | UserCountOutputTypeCountProviderCredentialsArgs
   aiRequests?: boolean | UserCountOutputTypeCountAiRequestsArgs
   aiRequestEvents?: boolean | UserCountOutputTypeCountAiRequestEventsArgs
@@ -5697,6 +6004,13 @@ export type UserCountOutputTypeCountExtensionInstallationsArgs<ExtArgs extends r
  */
 export type UserCountOutputTypeCountExtensionInstallationSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.ExtensionInstallationSessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountExtensionScenariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.UserExtensionScenarioWhereInput
 }
 
 /**
@@ -5816,6 +6130,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   remoteConfigVersions?: boolean | Prisma.User$remoteConfigVersionsArgs<ExtArgs>
   extensionInstallations?: boolean | Prisma.User$extensionInstallationsArgs<ExtArgs>
   extensionInstallationSessions?: boolean | Prisma.User$extensionInstallationSessionsArgs<ExtArgs>
+  extensionScenarios?: boolean | Prisma.User$extensionScenariosArgs<ExtArgs>
   providerCredentials?: boolean | Prisma.User$providerCredentialsArgs<ExtArgs>
   aiRequests?: boolean | Prisma.User$aiRequestsArgs<ExtArgs>
   aiRequestEvents?: boolean | Prisma.User$aiRequestEventsArgs<ExtArgs>
@@ -5897,6 +6212,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   remoteConfigVersions?: boolean | Prisma.User$remoteConfigVersionsArgs<ExtArgs>
   extensionInstallations?: boolean | Prisma.User$extensionInstallationsArgs<ExtArgs>
   extensionInstallationSessions?: boolean | Prisma.User$extensionInstallationSessionsArgs<ExtArgs>
+  extensionScenarios?: boolean | Prisma.User$extensionScenariosArgs<ExtArgs>
   providerCredentials?: boolean | Prisma.User$providerCredentialsArgs<ExtArgs>
   aiRequests?: boolean | Prisma.User$aiRequestsArgs<ExtArgs>
   aiRequestEvents?: boolean | Prisma.User$aiRequestEventsArgs<ExtArgs>
@@ -5930,6 +6246,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     remoteConfigVersions: Prisma.$RemoteConfigVersionPayload<ExtArgs>[]
     extensionInstallations: Prisma.$ExtensionInstallationPayload<ExtArgs>[]
     extensionInstallationSessions: Prisma.$ExtensionInstallationSessionPayload<ExtArgs>[]
+    extensionScenarios: Prisma.$UserExtensionScenarioPayload<ExtArgs>[]
     providerCredentials: Prisma.$ProviderCredentialPayload<ExtArgs>[]
     aiRequests: Prisma.$AiRequestPayload<ExtArgs>[]
     aiRequestEvents: Prisma.$AiRequestEventPayload<ExtArgs>[]
@@ -6365,6 +6682,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   remoteConfigVersions<T extends Prisma.User$remoteConfigVersionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$remoteConfigVersionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$RemoteConfigVersionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   extensionInstallations<T extends Prisma.User$extensionInstallationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$extensionInstallationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExtensionInstallationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   extensionInstallationSessions<T extends Prisma.User$extensionInstallationSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$extensionInstallationSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ExtensionInstallationSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  extensionScenarios<T extends Prisma.User$extensionScenariosArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$extensionScenariosArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$UserExtensionScenarioPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   providerCredentials<T extends Prisma.User$providerCredentialsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$providerCredentialsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProviderCredentialPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   aiRequests<T extends Prisma.User$aiRequestsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$aiRequestsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiRequestPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   aiRequestEvents<T extends Prisma.User$aiRequestEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$aiRequestEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiRequestEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -7053,6 +7371,30 @@ export type User$extensionInstallationSessionsArgs<ExtArgs extends runtime.Types
   take?: number
   skip?: number
   distinct?: Prisma.ExtensionInstallationSessionScalarFieldEnum | Prisma.ExtensionInstallationSessionScalarFieldEnum[]
+}
+
+/**
+ * User.extensionScenarios
+ */
+export type User$extensionScenariosArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the UserExtensionScenario
+   */
+  select?: Prisma.UserExtensionScenarioSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the UserExtensionScenario
+   */
+  omit?: Prisma.UserExtensionScenarioOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.UserExtensionScenarioInclude<ExtArgs> | null
+  where?: Prisma.UserExtensionScenarioWhereInput
+  orderBy?: Prisma.UserExtensionScenarioOrderByWithRelationInput | Prisma.UserExtensionScenarioOrderByWithRelationInput[]
+  cursor?: Prisma.UserExtensionScenarioWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.UserExtensionScenarioScalarFieldEnum | Prisma.UserExtensionScenarioScalarFieldEnum[]
 }
 
 /**
