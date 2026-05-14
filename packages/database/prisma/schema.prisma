@@ -125,6 +125,7 @@ model User {
   remoteConfigVersions   RemoteConfigVersion[]   @relation("RemoteConfigPublishedBy")
   extensionInstallations ExtensionInstallation[]
   extensionInstallationSessions ExtensionInstallationSession[]
+  extensionScenarios            UserExtensionScenario[]
   providerCredentials    ProviderCredential[]
   aiRequests             AiRequest[]
   aiRequestEvents        AiRequestEvent[]
@@ -581,6 +582,31 @@ model ExtensionInstallationSession {
   revokedAt               DateTime?
   installation            ExtensionInstallation @relation(fields: [extensionInstallationId], references: [id], onDelete: Cascade)
   user                    User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+
+model UserExtensionScenario {
+  id                  String   @id @default(cuid())
+  userId               String
+  scenarioId           String
+  schemaVersion        Int      @default(1)
+  name                 String
+  description          String?
+  buttonLabel          String
+  icon                 String?
+  enabled              Boolean  @default(true)
+  showInSelectionMenu  Boolean  @default(true)
+  menuOrder            Int      @default(100)
+  configJson           Json
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  deletedAt            DateTime?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, scenarioId])
+  @@index([userId, deletedAt])
+  @@index([userId, updatedAt])
 }
 
 model ProviderCredential {
