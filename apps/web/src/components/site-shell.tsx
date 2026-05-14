@@ -33,6 +33,12 @@ const NAV_ICONS: Record<string, ReactNode> = {
       <path d="M5 12h4M7 9v3" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
     </svg>
   ),
+  '/app/extension/scenarios': (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+      <rect x="2" y="2" width="10" height="10" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+      <path d="M4 5h6M4 7h6M4 9h4" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+    </svg>
+  ),
   '/app/settings': (
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
       <circle cx="7" cy="7" r="2.1" stroke="currentColor" strokeWidth="1.4"/>
@@ -47,6 +53,7 @@ const NAV_LABEL_KEYS: Record<string, 'profile' | 'usage' | 'history' | 'installa
   '/app/usage':         'usage',
   '/app/history':       'history',
   '/app/installations': 'installations',
+  '/app/extension/scenarios': 'installations',
   '/app/settings':      'settings',
 };
 
@@ -96,6 +103,7 @@ const PAGE_TITLE_KEYS: Record<string, { eyebrow: string; title: string }> = {
   '/app/history': { eyebrow: 'nav.history', title: 'historyPage.title' },
   '/app/installations': { eyebrow: 'nav.installations', title: 'installs.fleet' },
   '/app/settings': { eyebrow: 'settings.eyebrow', title: 'settings.title' },
+  '/app/extension/scenarios': { eyebrow: 'nav.installations', title: 'installs.fleet' },
   '/admin/users': { eyebrow: 'admin.page.adminLabel', title: 'admin.nav.items.users' },
   '/admin/logs': { eyebrow: 'admin.page.adminLabel', title: 'admin.nav.items.logs' },
   '/admin/extension-control': { eyebrow: 'admin.page.adminLabel', title: 'admin.nav.items.extensionControl' },

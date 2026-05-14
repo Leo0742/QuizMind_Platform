@@ -37,5 +37,6 @@ export const dashboardNavigation: NavigationItem[] = [
   { label: 'Usage', href: '/app/usage', requiresAuth: true },
   { label: 'History', href: '/app/history', requiresAuth: true },
   { label: 'Installations', href: '/app/installations', requiresAuth: true },
+  { label: 'Extension Scenarios', href: '/app/extension/scenarios', requiresAuth: true },
   { label: 'Settings', href: '/app/settings', requiresAuth: true },
 ];
