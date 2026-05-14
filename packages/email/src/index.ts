@@ -82,26 +82,29 @@ function buildEmailLayout(options: EmailLayoutOptions): string {
     <meta name="color-scheme" content="light">
     <title>${options.title}</title>
   </head>
-  <body style="margin:0;padding:0;background:#f3f6fb;font-family:Inter,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#111827;">
+  <body style="margin:0;padding:0;background:#f5ede3;font-family:Aptos,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#1f2933;">
     <div style="display:none;max-height:0;overflow:hidden;opacity:0;color:transparent;line-height:1px;font-size:1px;">
       ${options.preheader}
     </div>
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f3f6fb;margin:0;padding:32px 16px;width:100%;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f5ede3;margin:0;padding:36px 16px;width:100%;">
       <tr>
         <td align="center">
-          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;max-width:620px;background:#ffffff;border-radius:28px;overflow:hidden;border:1px solid #e5e7eb;box-shadow:0 18px 45px rgba(15,23,42,0.10);">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="width:100%;max-width:600px;background:#fffaf1;border-radius:24px;overflow:hidden;border:1px solid rgba(31,41,51,0.12);box-shadow:0 18px 48px rgba(71,56,44,0.12);">
             <tr>
-              <td style="padding:0;background:linear-gradient(135deg,#4f46e5 0%,#7c3aed 52%,#06b6d4 100%);">
+              <td style="height:7px;background:#b85c38;font-size:0;line-height:0;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="padding:30px 34px 20px 34px;background:#fffaf1;">
                 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
                   <tr>
-                    <td style="padding:30px 32px 42px 32px;">
-                      <div style="display:inline-block;padding:8px 13px;border-radius:999px;background:rgba(255,255,255,0.18);color:#ffffff;font-size:13px;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;">
+                    <td>
+                      <div style="display:inline-block;padding:7px 11px;border-radius:999px;background:rgba(184,92,56,0.10);color:#b85c38;font-size:12px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;">
                         QuizMind
                       </div>
-                      <h1 style="margin:22px 0 0 0;color:#ffffff;font-size:32px;line-height:1.15;font-weight:800;letter-spacing:-0.03em;">
+                      <h1 style="margin:18px 0 0 0;color:#1f2933;font-size:28px;line-height:1.2;font-weight:800;letter-spacing:-0.03em;">
                         ${options.title}
                       </h1>
-                      <p style="margin:14px 0 0 0;color:rgba(255,255,255,0.88);font-size:17px;line-height:1.6;">
+                      <p style="margin:10px 0 0 0;color:#5f6c76;font-size:16px;line-height:1.6;">
                         ${options.lead}
                       </p>
                     </td>
@@ -110,29 +113,29 @@ function buildEmailLayout(options: EmailLayoutOptions): string {
               </td>
             </tr>
             <tr>
-              <td style="padding:34px 32px 12px 32px;">
-                <div style="font-size:16px;line-height:1.7;color:#374151;">
+              <td style="padding:20px 34px 10px 34px;">
+                <div style="font-size:15px;line-height:1.72;color:#1f2933;">
                   ${options.bodyHtml}
                 </div>
               </td>
             </tr>
             <tr>
-              <td align="center" style="padding:20px 32px 28px 32px;">
-                <a href="${options.ctaUrl}" style="display:inline-block;background:#4f46e5;color:#ffffff;text-decoration:none;font-size:16px;font-weight:800;line-height:1;border-radius:14px;padding:17px 26px;box-shadow:0 12px 24px rgba(79,70,229,0.28);">
+              <td align="left" style="padding:18px 34px 30px 34px;">
+                <a href="${options.ctaUrl}" style="display:inline-block;background:#b85c38;color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;line-height:1;border-radius:999px;padding:15px 24px;box-shadow:0 10px 22px rgba(184,92,56,0.20);">
                   ${options.ctaLabel}
                 </a>
               </td>
             </tr>
             <tr>
-              <td style="padding:0 32px 34px 32px;">
-                <div style="border-top:1px solid #eef2f7;padding-top:22px;font-size:13px;line-height:1.6;color:#6b7280;">
+              <td style="padding:0 34px 34px 34px;">
+                <div style="border-top:1px solid rgba(31,41,51,0.10);padding-top:20px;font-size:13px;line-height:1.6;color:#5f6c76;">
                   ${options.footerHtml ?? 'This message was sent by QuizMind. If you were not expecting it, you can safely ignore it.'}
                 </div>
               </td>
             </tr>
           </table>
-          <p style="margin:18px 0 0 0;color:#9ca3af;font-size:12px;line-height:1.5;">
-            © QuizMind · AI quiz assistant platform
+          <p style="margin:16px 0 0 0;color:#8c7f73;font-size:12px;line-height:1.5;">
+            © QuizMind · ods.uz
           </p>
         </td>
       </tr>
@@ -182,18 +185,18 @@ export interface WorkspaceInvitationVars {
   acceptUrl: string;
 }
 
-const mutedLinkStyle = 'color:#4f46e5;text-decoration:none;word-break:break-all;font-weight:600;';
+const mutedLinkStyle = 'color:#2c5d88;text-decoration:none;word-break:break-all;font-weight:700;';
 
 export const verifyEmailTemplate = defineTemplate<VerifyEmailVars>('auth.verify-email', {
   subject: 'Verify your {{productName}} email',
   html: buildEmailLayout({
     preheader: 'Confirm your email address to activate your QuizMind account.',
     title: 'Verify your email',
-    lead: 'You are one step away from using QuizMind securely.',
+    lead: 'Confirm this address to finish setting up your account.',
     bodyHtml:
       `<p style="margin:0 0 16px 0;">Hello,</p>` +
       `<p style="margin:0 0 16px 0;">Confirm the email address for your <strong>{{productName}}</strong> account by pressing the button below.</p>` +
-      `<p style="margin:0 0 8px 0;color:#6b7280;font-size:14px;">If the button does not work, copy this secure link into your browser:</p>` +
+      `<p style="margin:0 0 8px 0;color:#5f6c76;font-size:14px;">If the button does not work, copy this secure link into your browser:</p>` +
       `<p style="margin:0;"><a href="{{verifyUrl}}" style="${mutedLinkStyle}">{{verifyUrl}}</a></p>`,
     ctaLabel: 'Verify email',
     ctaUrl: '{{verifyUrl}}',
@@ -209,12 +212,12 @@ export const passwordResetTemplate = defineTemplate<PasswordResetVars>('auth.pas
   html: buildEmailLayout({
     preheader: 'Use this secure link to reset your QuizMind password.',
     title: 'Reset your password',
-    lead: 'A password reset was requested for your QuizMind account.',
+    lead: 'We received a request to reset your account password.',
     bodyHtml:
       `<p style="margin:0 0 16px 0;">Hello,</p>` +
       `<p style="margin:0 0 16px 0;">Use the button below to choose a new password for <strong>{{productName}}</strong>.</p>` +
-      `<div style="margin:18px 0;padding:14px 16px;border-radius:16px;background:#f8fafc;border:1px solid #e5e7eb;color:#475569;font-size:14px;">This link expires in <strong>{{expiresInMinutes}} minutes</strong>. For security, do not share it with anyone.</div>` +
-      `<p style="margin:0 0 8px 0;color:#6b7280;font-size:14px;">If the button does not work, copy this secure link into your browser:</p>` +
+      `<div style="margin:18px 0;padding:14px 16px;border-radius:16px;background:#f7efe5;border:1px solid rgba(184,92,56,0.18);color:#3c4852;font-size:14px;">This link expires in <strong>{{expiresInMinutes}} minutes</strong>. For security, do not share it with anyone.</div>` +
+      `<p style="margin:0 0 8px 0;color:#5f6c76;font-size:14px;">If the button does not work, copy this secure link into your browser:</p>` +
       `<p style="margin:0;"><a href="{{resetUrl}}" style="${mutedLinkStyle}">{{resetUrl}}</a></p>`,
     ctaLabel: 'Reset password',
     ctaUrl: '{{resetUrl}}',
@@ -228,11 +231,11 @@ export const workspaceInvitationTemplate = defineTemplate<WorkspaceInvitationVar
   subject: 'You were invited to {{workspaceName}}',
   html: buildEmailLayout({
     preheader: '{{inviterName}} invited you to collaborate in {{workspaceName}} on QuizMind.',
-    title: 'You have a workspace invite',
+    title: 'Workspace invitation',
     lead: 'Join your team and start working with shared QuizMind tools.',
     bodyHtml:
       `<p style="margin:0 0 16px 0;"><strong>{{inviterName}}</strong> invited you to join <strong>{{workspaceName}}</strong>.</p>` +
-      `<p style="margin:0 0 8px 0;color:#6b7280;font-size:14px;">Accept the invitation with the button below, or copy this link into your browser:</p>` +
+      `<p style="margin:0 0 8px 0;color:#5f6c76;font-size:14px;">Accept the invitation with the button below, or copy this link into your browser:</p>` +
       `<p style="margin:0;"><a href="{{acceptUrl}}" style="${mutedLinkStyle}">{{acceptUrl}}</a></p>`,
     ctaLabel: 'Accept invitation',
     ctaUrl: '{{acceptUrl}}',
