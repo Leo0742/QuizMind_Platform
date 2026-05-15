@@ -5,6 +5,7 @@ import { PATH_METADATA, SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/const
 import { ExtensionScenariosController } from '../src/extension/extension-scenarios.controller';
 import { ExtensionScenarioPresetsController } from '../src/extension/extension-scenario-presets.controller';
 import { AuthService } from '../src/auth/auth.service';
+import { ExtensionControlService } from '../src/extension/extension-control.service';
 import { ExtensionScenariosService } from '../src/extension/extension-scenarios.service';
 import { ExtensionScenarioPresetsService } from '../src/extension/extension-scenario-presets.service';
 
@@ -37,48 +38,84 @@ test('extension scenario presets controller is mounted without api prefix', () =
 });
 
 test('GET /extension/scenarios/sync without auth throws 401', async () => {
-  const controller = new ExtensionScenariosController({ getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any, { sync: async () => ({}) } as any);
+  const controller = new ExtensionScenariosController({ getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any, { resolveInstallationSession: async () => ({}) } as any, { sync: async () => ({}) } as any);
   await assert.rejects(() => controller.sync(undefined), UnauthorizedException);
 });
 
-test('GET /extension/scenarios/sync with auth returns sync payload from service', async () => {
+test('GET /extension/scenarios/sync with web token returns sync payload from service', async () => {
   const session = { user: { id: 'u1', email: 'u@q.test' } };
   const payload = { schemaVersion: 1, items: [], deleted: [], serverTime: '2026-05-15T00:00:00.000Z' };
-  const controller = new ExtensionScenariosController({ getCurrentSession: async () => session } as any, { sync: async (s: unknown) => { assert.equal(s, session); return payload; } } as any);
+  const controller = new ExtensionScenariosController({ getCurrentSession: async () => session } as any, { resolveInstallationSession: async () => ({}) } as any, { sync: async (s: unknown) => { assert.equal(s, session); return payload; } } as any);
 
   const res = await controller.sync('Bearer valid-token');
   assert.deepEqual(res, payload);
 });
 
-test('DI metadata: ExtensionScenariosController explicitly injects AuthService and ExtensionScenariosService', () => {
+test('GET /extension/scenarios/sync with installation token falls back to installation session', async () => {
+  const payload = { schemaVersion: 1, items: [], deleted: [], serverTime: '2026-05-15T00:00:00.000Z' };
+  let capturedSession: any;
+  const controller = new ExtensionScenariosController(
+    { getCurrentSession: async () => { throw new UnauthorizedException('bad'); } } as any,
+    { resolveInstallationSession: async (_token: string, options: { endpoint: string }) => ({ installation: { userId: 'ext-user-1' }, endpoint: options.endpoint }) } as any,
+    { sync: async (s: unknown) => { capturedSession = s; return payload; } } as any,
+  );
+
+  const res = await controller.sync('Bearer installation-token');
+  assert.deepEqual(res, payload);
+  assert.equal(capturedSession.user.id, 'ext-user-1');
+  assert.equal(capturedSession.principal.userId, 'ext-user-1');
+});
+
+test('GET /extension/scenarios/sync returns reconnect unauthorized when both auth modes fail', async () => {
+  const controller = new ExtensionScenariosController(
+    { getCurrentSession: async () => { throw new UnauthorizedException('jwt invalid'); } } as any,
+    { resolveInstallationSession: async () => { throw new UnauthorizedException('installation invalid'); } } as any,
+    { sync: async () => ({}) } as any,
+  );
+
+  await assert.rejects(
+    () => controller.sync('Bearer bad-token'),
+    (error: unknown) => error instanceof UnauthorizedException && error.message === 'Session expired. Reconnect your account.',
+  );
+});
+
+test('DI metadata: ExtensionScenariosController explicitly injects AuthService, ExtensionControlService and ExtensionScenariosService', () => {
   const deps = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, ExtensionScenariosController) as Array<{ index: number; param: unknown }>;
   assert.ok(Array.isArray(deps));
-  assert.equal(deps.length, 2);
+  assert.equal(deps.length, 3);
   assert.equal(deps.find((d) => d.index === 0)?.param, AuthService);
-  assert.equal(deps.find((d) => d.index === 1)?.param, ExtensionScenariosService);
+  assert.equal(deps.find((d) => d.index === 1)?.param, ExtensionControlService);
+  assert.equal(deps.find((d) => d.index === 2)?.param, ExtensionScenariosService);
 });
 
-test('DI metadata: ExtensionScenarioPresetsController explicitly injects AuthService and ExtensionScenarioPresetsService', () => {
+test('DI metadata: ExtensionScenarioPresetsController explicitly injects AuthService, ExtensionControlService and ExtensionScenarioPresetsService', () => {
   const deps = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, ExtensionScenarioPresetsController) as Array<{ index: number; param: unknown }>;
   assert.ok(Array.isArray(deps));
-  assert.equal(deps.length, 2);
+  assert.equal(deps.length, 3);
   assert.equal(deps.find((d) => d.index === 0)?.param, AuthService);
-  assert.equal(deps.find((d) => d.index === 1)?.param, ExtensionScenarioPresetsService);
+  assert.equal(deps.find((d) => d.index === 1)?.param, ExtensionControlService);
+  assert.equal(deps.find((d) => d.index === 2)?.param, ExtensionScenarioPresetsService);
 });
 
-test('controller methods with wired service throw UnauthorizedException for missing auth and preview remains callable', async () => {
-  const scenarioController = new ExtensionScenariosController(
-    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
-    { list: async () => ({ items: [] }), sync: async () => ({ items: [], deleted: [] }) } as any,
-  );
-  await assert.rejects(() => scenarioController.list(undefined), UnauthorizedException);
-  await assert.rejects(() => scenarioController.sync(undefined), UnauthorizedException);
-
+test('presets mine and install support installation token fallback and preview stays optional', async () => {
+  let mineSession: any;
+  let installSession: any;
+  let previewSession: any;
   const presetsController = new ExtensionScenarioPresetsController(
-    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
-    { mine: async () => ({ items: [] }), install: async () => ({ ok: true }), preview: async () => ({ preset: { slug: 's1' } }) } as any,
+    { getCurrentSession: async () => { throw new UnauthorizedException('jwt invalid'); } } as any,
+    { resolveInstallationSession: async () => ({ installation: { userId: 'ext-user-2' } }) } as any,
+    {
+      mine: async (s: unknown) => { mineSession = s; return { items: [] }; },
+      install: async (s: unknown) => { installSession = s; return { ok: true }; },
+      preview: async (_slug: string, s: unknown) => { previewSession = s; return { preset: { slug: 's1' } }; },
+    } as any,
   );
-  await assert.rejects(() => presetsController.mine(undefined), UnauthorizedException);
-  await assert.rejects(() => presetsController.install('s1', undefined), UnauthorizedException);
-  assert.deepEqual(await presetsController.preview('s1', undefined), { preset: { slug: 's1' } });
+
+  await presetsController.mine('Bearer installation-token');
+  await presetsController.install('s1', 'Bearer installation-token');
+  await presetsController.preview('s1', undefined);
+
+  assert.equal(mineSession.user.id, 'ext-user-2');
+  assert.equal(installSession.principal.userId, 'ext-user-2');
+  assert.equal(previewSession, null);
 });

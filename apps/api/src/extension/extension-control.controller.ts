@@ -33,6 +33,7 @@ import { AuthService } from '../auth/auth.service';
 import { type CurrentSessionSnapshot } from '../auth/auth.types';
 import { AiProxyService } from '../ai/ai-proxy.service';
 import { ExtensionControlService } from './extension-control.service';
+import { buildInstallationRuntimeSession } from './extension-auth-session';
 
 function ok<T>(data: T): ApiSuccess<T> {
   return {
@@ -123,8 +124,6 @@ interface ExtensionInstallationSelfDisconnectRequest {
   installationId?: string;
 }
 
-type InstallationSessionSnapshot = Awaited<ReturnType<ExtensionControlService['resolveInstallationSession']>>;
-
 function readFiniteNumber(value: unknown): number | undefined {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
     return undefined;
@@ -174,28 +173,6 @@ function mapProviderModelToExtensionShape(entry: ProviderModelCatalogEntry) {
           input_modalities: ['text'],
           output_modalities: ['text'],
         },
-  };
-}
-
-function buildInstallationRuntimeSession(
-  installationSession: InstallationSessionSnapshot,
-): CurrentSessionSnapshot {
-  return {
-    personaKey: 'extension-installation',
-    personaLabel: 'Extension Installation',
-    notes: ['installation-session'],
-    user: {
-      id: installationSession.installation.userId,
-      email: `installation+${installationSession.installation.userId}@quizmind.local`,
-    },
-    principal: {
-      userId: installationSession.installation.userId,
-      email: `installation+${installationSession.installation.userId}@quizmind.local`,
-      systemRoles: [],
-      entitlements: [],
-      featureFlags: [],
-    },
-    permissions: [],
   };
 }
 
