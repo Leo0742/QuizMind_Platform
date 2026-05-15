@@ -35,6 +35,9 @@ import { ExtensionInstallationSessionRepository } from './extension/extension-in
 import { ExtensionScenariosController } from './extension/extension-scenarios.controller';
 import { ExtensionScenariosRepository } from './extension/extension-scenarios.repository';
 import { ExtensionScenariosService } from './extension/extension-scenarios.service';
+import { ExtensionScenarioPresetsController } from './extension/extension-scenario-presets.controller';
+import { ExtensionScenarioPresetsRepository } from './extension/extension-scenario-presets.repository';
+import { ExtensionScenarioPresetsService } from './extension/extension-scenario-presets.service';
 import { FeatureFlagRepository } from './feature-flags/feature-flag.repository';
 import { AdminLogRepository } from './logs/admin-log.repository';
 import { AdminLogAiSyncService } from './logs/admin-log-ai-sync.service';
@@ -72,6 +75,7 @@ import { UserBillingOverrideRepository } from './ai/user-billing-override.reposi
     ExtensionControlController,
     ExtensionFileUploadController,
     ExtensionScenariosController,
+    ExtensionScenarioPresetsController,
     ProviderCredentialController,
     AiProxyController,
     AiHistoryController,
@@ -101,6 +105,8 @@ import { UserBillingOverrideRepository } from './ai/user-billing-override.reposi
     ExtensionInstallationSessionRepository,
     ExtensionScenariosRepository,
     ExtensionScenariosService,
+    ExtensionScenarioPresetsRepository,
+    ExtensionScenarioPresetsService,
     FeatureFlagRepository,
     InfrastructureHealthService,
     AdminLogRepository,

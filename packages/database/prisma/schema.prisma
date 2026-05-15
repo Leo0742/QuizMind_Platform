@@ -126,6 +126,7 @@ model User {
   extensionInstallations ExtensionInstallation[]
   extensionInstallationSessions ExtensionInstallationSession[]
   extensionScenarios            UserExtensionScenario[]
+  extensionScenarioPresets      ExtensionScenarioPreset[]
   providerCredentials    ProviderCredential[]
   aiRequests             AiRequest[]
   aiRequestEvents        AiRequestEvent[]
@@ -607,6 +608,31 @@ model UserExtensionScenario {
   @@unique([userId, scenarioId])
   @@index([userId, deletedAt])
   @@index([userId, updatedAt])
+}
+
+
+model ExtensionScenarioPreset {
+  id               String   @id @default(cuid())
+  ownerUserId      String
+  sourceScenarioId String?
+  slug             String   @unique
+  name             String
+  description      String?
+  buttonLabel      String
+  icon             String?
+  schemaVersion    Int      @default(1)
+  presetVersion    Int      @default(1)
+  visibility       String   @default("unlisted")
+  configJson       Json
+  installCount     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  disabledAt       DateTime?
+
+  owner User @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+
+  @@index([ownerUserId, createdAt])
+  @@index([visibility, disabledAt])
 }
 
 model ProviderCredential {

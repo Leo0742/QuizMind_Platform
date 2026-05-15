@@ -168,6 +168,11 @@ export type ExtensionInstallationSession = Prisma.ExtensionInstallationSessionMo
  */
 export type UserExtensionScenario = Prisma.UserExtensionScenarioModel
 /**
+ * Model ExtensionScenarioPreset
+ * 
+ */
+export type ExtensionScenarioPreset = Prisma.ExtensionScenarioPresetModel
+/**
  * Model ProviderCredential
  * 
  */

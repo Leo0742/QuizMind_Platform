@@ -414,6 +414,7 @@ export const ModelName = {
   ExtensionInstallation: 'ExtensionInstallation',
   ExtensionInstallationSession: 'ExtensionInstallationSession',
   UserExtensionScenario: 'UserExtensionScenario',
+  ExtensionScenarioPreset: 'ExtensionScenarioPreset',
   ProviderCredential: 'ProviderCredential',
   AiProviderPolicy: 'AiProviderPolicy',
   ExtensionTelemetry: 'ExtensionTelemetry',
@@ -440,7 +441,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "platformSetting" | "account" | "session" | "emailVerification" | "passwordReset" | "workspace" | "wallet" | "walletTopUp" | "walletLedgerEntry" | "userBillingOverride" | "adminWalletAdjustmentBatch" | "workspaceMembership" | "workspaceInvite" | "userSystemRole" | "webhookEvent" | "quotaCounter" | "aiRequest" | "aiRequestEvent" | "aiRequestContent" | "aiRequestAttachment" | "aiUsageDailyRollup" | "featureFlag" | "featureFlagOverride" | "remoteConfigVersion" | "remoteConfigLayer" | "extensionCompatibilityRule" | "extensionInstallation" | "extensionInstallationSession" | "userExtensionScenario" | "providerCredential" | "aiProviderPolicy" | "extensionTelemetry" | "auditLog" | "activityLog" | "securityEvent" | "domainEvent" | "adminLogEvent" | "supportTicket" | "supportTicketPresetFavorite" | "supportImpersonationSession"
+    modelProps: "user" | "platformSetting" | "account" | "session" | "emailVerification" | "passwordReset" | "workspace" | "wallet" | "walletTopUp" | "walletLedgerEntry" | "userBillingOverride" | "adminWalletAdjustmentBatch" | "workspaceMembership" | "workspaceInvite" | "userSystemRole" | "webhookEvent" | "quotaCounter" | "aiRequest" | "aiRequestEvent" | "aiRequestContent" | "aiRequestAttachment" | "aiUsageDailyRollup" | "featureFlag" | "featureFlagOverride" | "remoteConfigVersion" | "remoteConfigLayer" | "extensionCompatibilityRule" | "extensionInstallation" | "extensionInstallationSession" | "userExtensionScenario" | "extensionScenarioPreset" | "providerCredential" | "aiProviderPolicy" | "extensionTelemetry" | "auditLog" | "activityLog" | "securityEvent" | "domainEvent" | "adminLogEvent" | "supportTicket" | "supportTicketPresetFavorite" | "supportImpersonationSession"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -2664,6 +2665,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ExtensionScenarioPreset: {
+      payload: Prisma.$ExtensionScenarioPresetPayload<ExtArgs>
+      fields: Prisma.ExtensionScenarioPresetFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ExtensionScenarioPresetFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ExtensionScenarioPresetFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>
+        }
+        findFirst: {
+          args: Prisma.ExtensionScenarioPresetFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ExtensionScenarioPresetFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>
+        }
+        findMany: {
+          args: Prisma.ExtensionScenarioPresetFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>[]
+        }
+        create: {
+          args: Prisma.ExtensionScenarioPresetCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>
+        }
+        createMany: {
+          args: Prisma.ExtensionScenarioPresetCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ExtensionScenarioPresetCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>[]
+        }
+        delete: {
+          args: Prisma.ExtensionScenarioPresetDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>
+        }
+        update: {
+          args: Prisma.ExtensionScenarioPresetUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>
+        }
+        deleteMany: {
+          args: Prisma.ExtensionScenarioPresetDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ExtensionScenarioPresetUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ExtensionScenarioPresetUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>[]
+        }
+        upsert: {
+          args: Prisma.ExtensionScenarioPresetUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ExtensionScenarioPresetPayload>
+        }
+        aggregate: {
+          args: Prisma.ExtensionScenarioPresetAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateExtensionScenarioPreset>
+        }
+        groupBy: {
+          args: Prisma.ExtensionScenarioPresetGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExtensionScenarioPresetGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ExtensionScenarioPresetCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ExtensionScenarioPresetCountAggregateOutputType> | number
+        }
+      }
+    }
     ProviderCredential: {
       payload: Prisma.$ProviderCredentialPayload<ExtArgs>
       fields: Prisma.ProviderCredentialFieldRefs
@@ -3999,6 +4074,28 @@ export const UserExtensionScenarioScalarFieldEnum = {
 export type UserExtensionScenarioScalarFieldEnum = (typeof UserExtensionScenarioScalarFieldEnum)[keyof typeof UserExtensionScenarioScalarFieldEnum]
 
 
+export const ExtensionScenarioPresetScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  sourceScenarioId: 'sourceScenarioId',
+  slug: 'slug',
+  name: 'name',
+  description: 'description',
+  buttonLabel: 'buttonLabel',
+  icon: 'icon',
+  schemaVersion: 'schemaVersion',
+  presetVersion: 'presetVersion',
+  visibility: 'visibility',
+  configJson: 'configJson',
+  installCount: 'installCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  disabledAt: 'disabledAt'
+} as const
+
+export type ExtensionScenarioPresetScalarFieldEnum = (typeof ExtensionScenarioPresetScalarFieldEnum)[keyof typeof ExtensionScenarioPresetScalarFieldEnum]
+
+
 export const ProviderCredentialScalarFieldEnum = {
   id: 'id',
   provider: 'provider',
@@ -4614,6 +4711,7 @@ export type GlobalOmitConfig = {
   extensionInstallation?: Prisma.ExtensionInstallationOmit
   extensionInstallationSession?: Prisma.ExtensionInstallationSessionOmit
   userExtensionScenario?: Prisma.UserExtensionScenarioOmit
+  extensionScenarioPreset?: Prisma.ExtensionScenarioPresetOmit
   providerCredential?: Prisma.ProviderCredentialOmit
   aiProviderPolicy?: Prisma.AiProviderPolicyOmit
   extensionTelemetry?: Prisma.ExtensionTelemetryOmit

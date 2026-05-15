@@ -54,6 +54,7 @@ export function ExtensionScenariosClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
+  const [shareLinks, setShareLinks] = useState<Array<{slug:string;name:string;previewUrl:string;installCount?:number;visibility?:string}>>([]);
   const [editing, setEditing] = useState<ScenarioConfig | null>(null);
   const [open, setOpen] = useState(false);
 
@@ -83,6 +84,14 @@ export function ExtensionScenariosClient() {
     try { await readBffResponse(await fetch(`/bff/extension/scenarios/${encodeURIComponent(item.id!)}`, { method: 'PATCH', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ patch: { enabled: !item.enabled } }) })); await load(); }
     catch (e) { setError((e as Error).message); }
   }
+  async function createPreset(item: ScenarioConfig) {
+    try {
+      const data = await readBffResponse<{ preset: { slug: string; name: string; previewUrl: string } }>(await fetch(`/bff/extension/scenario-presets/from-scenario/${encodeURIComponent(item.id!)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ visibility: 'unlisted' }) }));
+      setStatus(`Ссылка создана: ${data.preset.previewUrl}`);
+      setShareLinks((prev) => [{ slug: data.preset.slug, name: data.preset.name, previewUrl: data.preset.previewUrl }, ...prev]);
+    } catch (e) { setError((e as Error).message); }
+  }
+
   async function remove(item: ScenarioConfig) {
     if (!confirm(`Удалить сценарий «${item.name}»?`)) return;
     try { await readBffResponse(await fetch(`/bff/extension/scenarios/${encodeURIComponent(item.id!)}`, { method: 'DELETE' })); await load(); setStatus('Сценарий удалён.'); }
@@ -118,7 +127,8 @@ export function ExtensionScenariosClient() {
       <button className='btn-ghost' onClick={exportJson}>Экспортировать JSON</button>
       <label className='btn-ghost' style={{ cursor: 'pointer' }}>Импортировать JSON<input type='file' accept='application/json' style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) void importJson(f); }} /></label>
     </div>
-    {loading ? <p>Загрузка…</p> : items.length === 0 ? <section className='empty-state'><p>У вас пока нет пользовательских сценариев. Создайте первый сценарий или синхронизируйте расширение.</p></section> : items.map((item) => <article key={item.id} className='panel'><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><div><h3>{item.icon ? `${item.icon} ` : ''}{item.name}</h3><p>{item.description}</p><p>Кнопка: {item.buttonLabel} · Модель: {item.ai?.model || 'по умолчанию'} · Порядок: {item.menuOrder}</p><p>Обновлено: {formatDate(item.updatedAt)}</p><p>{item.enabled ? 'Включён' : 'Выключен'} · {item.showInSelectionMenu ? 'В меню' : 'Скрыт'}</p></div><div className='link-row'><button className='btn-ghost' onClick={() => { setEditing(item); setOpen(true); }}>Редактировать</button><button className='btn-ghost' onClick={() => void toggleEnabled(item)}>{item.enabled ? 'Отключить' : 'Включить'}</button><button className='btn-danger' onClick={() => void remove(item)}>Удалить</button></div></div></article>)}
+    {loading ? <p>Загрузка…</p> : items.length === 0 ? <section className='empty-state'><p>У вас пока нет пользовательских сценариев. Создайте первый сценарий или синхронизируйте расширение.</p></section> : items.map((item) => <article key={item.id} className='panel'><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><div><h3>{item.icon ? `${item.icon} ` : ''}{item.name}</h3><p>{item.description}</p><p>Кнопка: {item.buttonLabel} · Модель: {item.ai?.model || 'по умолчанию'} · Порядок: {item.menuOrder}</p><p>Обновлено: {formatDate(item.updatedAt)}</p><p>{item.enabled ? 'Включён' : 'Выключен'} · {item.showInSelectionMenu ? 'В меню' : 'Скрыт'}</p></div><div className='link-row'><button className='btn-ghost' onClick={() => { setEditing(item); setOpen(true); }}>Редактировать</button><button className='btn-ghost' onClick={() => void toggleEnabled(item)}>{item.enabled ? 'Отключить' : 'Включить'}</button><button className='btn-ghost' onClick={() => void createPreset(item)}>Поделиться</button><button className='btn-danger' onClick={() => void remove(item)}>Удалить</button></div></div></article>)}
+    {shareLinks.length > 0 ? <article className='panel'><h3>Мои preset-ссылки</h3>{shareLinks.map((p) => <p key={p.slug}><a href={p.previewUrl}>{p.name}</a> ({p.slug})</p>)}</article> : null}
     {open && editing ? <Editor scenario={editing} onCancel={() => setOpen(false)} onSave={save} /> : null}
   </div>;
 }
