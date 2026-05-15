@@ -21,6 +21,14 @@ interface ScenarioConfig {
 }
 
 type BffEnvelope<T> = { ok?: boolean; data?: T; error?: { message?: string }; message?: string };
+interface PresetLink {
+  slug: string;
+  name: string;
+  previewUrl: string;
+  visibility?: string;
+  installCount?: number;
+  createdAt?: string;
+}
 const defaults: Pick<ScenarioConfig, 'ai' | 'input' | 'output' | 'window'> = {
   ai: { provider: 'auto', model: null, temperature: 0.3, maxTokens: 700 },
   input: { type: 'selection_text' },
@@ -54,15 +62,19 @@ export function ExtensionScenariosClient() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [status, setStatus] = useState<string | null>(null);
-  const [shareLinks, setShareLinks] = useState<Array<{slug:string;name:string;previewUrl:string;installCount?:number;visibility?:string}>>([]);
+  const [shareLinks, setShareLinks] = useState<PresetLink[]>([]);
   const [editing, setEditing] = useState<ScenarioConfig | null>(null);
   const [open, setOpen] = useState(false);
 
   async function load() {
     setLoading(true); setError(null);
     try {
-      const data = await readBffResponse<{ schemaVersion: number; items: ScenarioConfig[] }>(await fetch('/bff/extension/scenarios', { cache: 'no-store' }));
+      const [data, mine] = await Promise.all([
+        readBffResponse<{ schemaVersion: number; items: ScenarioConfig[] }>(await fetch('/bff/extension/scenarios', { cache: 'no-store' })),
+        readBffResponse<{ items: PresetLink[] }>(await fetch('/bff/extension/scenario-presets/mine', { cache: 'no-store' })),
+      ]);
       setItems(data.items ?? []);
+      setShareLinks(mine.items ?? []);
     } catch (e) { setError((e as Error).message); } finally { setLoading(false); }
   }
   useEffect(() => { void load(); }, []);
@@ -88,7 +100,7 @@ export function ExtensionScenariosClient() {
     try {
       const data = await readBffResponse<{ preset: { slug: string; name: string; previewUrl: string } }>(await fetch(`/bff/extension/scenario-presets/from-scenario/${encodeURIComponent(item.id!)}`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ visibility: 'unlisted' }) }));
       setStatus(`Ссылка создана: ${data.preset.previewUrl}`);
-      setShareLinks((prev) => [{ slug: data.preset.slug, name: data.preset.name, previewUrl: data.preset.previewUrl }, ...prev]);
+      await load();
     } catch (e) { setError((e as Error).message); }
   }
 
@@ -128,7 +140,7 @@ export function ExtensionScenariosClient() {
       <label className='btn-ghost' style={{ cursor: 'pointer' }}>Импортировать JSON<input type='file' accept='application/json' style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) void importJson(f); }} /></label>
     </div>
     {loading ? <p>Загрузка…</p> : items.length === 0 ? <section className='empty-state'><p>У вас пока нет пользовательских сценариев. Создайте первый сценарий или синхронизируйте расширение.</p></section> : items.map((item) => <article key={item.id} className='panel'><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><div><h3>{item.icon ? `${item.icon} ` : ''}{item.name}</h3><p>{item.description}</p><p>Кнопка: {item.buttonLabel} · Модель: {item.ai?.model || 'по умолчанию'} · Порядок: {item.menuOrder}</p><p>Обновлено: {formatDate(item.updatedAt)}</p><p>{item.enabled ? 'Включён' : 'Выключен'} · {item.showInSelectionMenu ? 'В меню' : 'Скрыт'}</p></div><div className='link-row'><button className='btn-ghost' onClick={() => { setEditing(item); setOpen(true); }}>Редактировать</button><button className='btn-ghost' onClick={() => void toggleEnabled(item)}>{item.enabled ? 'Отключить' : 'Включить'}</button><button className='btn-ghost' onClick={() => void createPreset(item)}>Поделиться</button><button className='btn-danger' onClick={() => void remove(item)}>Удалить</button></div></div></article>)}
-    {shareLinks.length > 0 ? <article className='panel'><h3>Мои preset-ссылки</h3>{shareLinks.map((p) => <p key={p.slug}><a href={p.previewUrl}>{p.name}</a> ({p.slug})</p>)}</article> : null}
+    {shareLinks.length > 0 ? <article className='panel'><h3>Мои preset-ссылки</h3>{shareLinks.map((p) => <div key={p.slug} style={{display:'grid',gap:6,padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}}><p><a href={p.previewUrl}>{p.name}</a> ({p.slug})</p><p>Видимость: {p.visibility ?? 'unlisted'} · Установок: {p.installCount ?? 0} · Создан: {formatDate(p.createdAt)}</p><div className='link-row'><a className='btn-ghost' href={p.previewUrl}>Открыть</a><button className='btn-ghost' onClick={() => navigator.clipboard.writeText(`${window.location.origin}${p.previewUrl}`).then(() => setStatus('Ссылка скопирована.')).catch(() => setError('Не удалось скопировать ссылку.'))}>Скопировать ссылку</button><button className='btn-danger' onClick={async()=>{ if(!confirm('Отключить эту preset-ссылку? После этого её нельзя будет установить по ссылке.')) return; try { await readBffResponse(await fetch(`/bff/extension/scenario-presets/${encodeURIComponent(p.slug)}`, { method: 'DELETE' })); await load(); setStatus('Preset-ссылка отключена.'); } catch (e) { setError((e as Error).message); } }}>Отключить</button></div></div>)}</article> : null}
     {open && editing ? <Editor scenario={editing} onCancel={() => setOpen(false)} onSave={save} /> : null}
   </div>;
 }

@@ -29,9 +29,17 @@ export class ExtensionScenarioPresetsService {
   async install(session: CurrentSessionSnapshot, slug: string) {
     const p = await this.presets.findBySlug(slug); if (!p || p.disabledAt || p.visibility !== 'unlisted') throw new NotFoundException('Preset not found');
     if ((await this.scenarios.countActiveByUserId(session.user.id)) >= 50) throw new ConflictException('Scenario limit reached');
-    const cfg = this.scenarioService.normalizeScenarioConfig(p.configJson, { scenarioId: `scn_${randomUUID()}` });
-    const created = await this.scenarios.create({ user: { connect: { id: session.user.id } }, scenarioId: cfg.id, schemaVersion: 1, name: cfg.name, description: cfg.description, buttonLabel: cfg.buttonLabel, icon: cfg.icon, enabled: true, showInSelectionMenu: cfg.showInSelectionMenu ?? true, menuOrder: cfg.menuOrder, configJson: cfg as any });
-    await this.presets.updateBySlug(slug, { installCount: { increment: 1 } });
+    const newScenarioId = `scn_${randomUUID()}`;
+    const now = new Date();
+    const nowIso = now.toISOString();
+    const normalized = this.scenarioService.normalizeScenarioConfig(p.configJson, { scenarioId: newScenarioId, now });
+    const installedConfig = { ...normalized, id: newScenarioId, enabled: true, showInSelectionMenu: normalized.showInSelectionMenu ?? true, createdAt: nowIso, updatedAt: nowIso };
+
+    const created = await this.presets.transaction(async (tx) => {
+      const scenarioCreated = await this.scenarios.create({ user: { connect: { id: session.user.id } }, scenarioId: installedConfig.id, schemaVersion: 1, name: installedConfig.name, description: installedConfig.description, buttonLabel: installedConfig.buttonLabel, icon: installedConfig.icon, enabled: installedConfig.enabled, showInSelectionMenu: installedConfig.showInSelectionMenu, menuOrder: installedConfig.menuOrder, configJson: installedConfig as any }, tx);
+      await this.presets.updateBySlug(slug, { installCount: { increment: 1 } }, tx);
+      return scenarioCreated;
+    });
     return { scenario: created.configJson };
   }
 
