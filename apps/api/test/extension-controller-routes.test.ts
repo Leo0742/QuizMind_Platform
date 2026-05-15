@@ -32,6 +32,7 @@ test('extension scenario presets controller is mounted without api prefix', () =
 
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'fromScenario'), 'from-scenario/:scenarioId');
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'mine'), 'mine');
+  assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'catalog'), 'catalog');
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'preview'), ':slug');
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'install'), ':slug/install');
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'del'), ':slug');

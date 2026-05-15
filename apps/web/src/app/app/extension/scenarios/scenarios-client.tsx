@@ -26,7 +26,11 @@ interface PresetLink {
   name: string;
   previewUrl: string;
   visibility?: string;
+  category?: string | null;
+  tags?: string[];
   installCount?: number;
+  publishedAt?: string | null;
+  moderationStatus?: string;
   createdAt?: string;
 }
 const defaults: Pick<ScenarioConfig, 'ai' | 'input' | 'output' | 'window'> = {
@@ -108,6 +112,21 @@ export function ExtensionScenariosClient() {
     } catch (e) { setError((e as Error).message); }
   }
 
+
+  async function updatePreset(slug: string, patch: Record<string, unknown>, okMessage: string) {
+    try {
+      await readBffResponse(await fetch(`/bff/extension/scenario-presets/${encodeURIComponent(slug)}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(patch),
+      }));
+      await load();
+      setStatus(okMessage);
+    } catch (e) {
+      setError((e as Error).message);
+    }
+  }
+
   async function remove(item: ScenarioConfig) {
     if (!confirm(`Удалить сценарий «${item.name}»?`)) return;
     try { await readBffResponse(await fetch(`/bff/extension/scenarios/${encodeURIComponent(item.id!)}`, { method: 'DELETE' })); await load(); setStatus('Сценарий удалён.'); }
@@ -144,7 +163,7 @@ export function ExtensionScenariosClient() {
       <label className='btn-ghost' style={{ cursor: 'pointer' }}>Импортировать JSON<input type='file' accept='application/json' style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) void importJson(f); }} /></label>
     </div>
     {loading ? <p>Загрузка…</p> : items.length === 0 ? <section className='empty-state'><p>У вас пока нет пользовательских сценариев. Создайте первый сценарий или синхронизируйте расширение.</p></section> : items.map((item) => <article key={item.id} className='panel'><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><div><h3>{item.icon ? `${item.icon} ` : ''}{item.name}</h3><p>{item.description}</p><p>Кнопка: {item.buttonLabel} · Модель: {item.ai?.model || 'по умолчанию'} · Порядок: {item.menuOrder}</p><p>Обновлено: {formatDate(item.updatedAt)}</p><p>{item.enabled ? 'Включён' : 'Выключен'} · {item.showInSelectionMenu ? 'В меню' : 'Скрыт'}</p></div><div className='link-row'><button className='btn-ghost' onClick={() => { setEditing(item); setOpen(true); }}>Редактировать</button><button className='btn-ghost' onClick={() => void toggleEnabled(item)}>{item.enabled ? 'Отключить' : 'Включить'}</button><button className='btn-ghost' onClick={() => void createPreset(item)}>Поделиться</button><button className='btn-danger' onClick={() => void remove(item)}>Удалить</button></div></div></article>)}
-    {shareLinks.length > 0 ? <article className='panel'><h3>Мои preset-ссылки</h3>{shareLinks.map((p) => <div key={p.slug} style={{display:'grid',gap:6,padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}}><p><a href={p.previewUrl}>{p.name}</a> ({p.slug})</p><p>Видимость: {p.visibility ?? 'unlisted'} · Установок: {p.installCount ?? 0} · Создан: {formatDate(p.createdAt)}</p><div className='link-row'><a className='btn-ghost' href={p.previewUrl}>Открыть</a><button className='btn-ghost' onClick={() => navigator.clipboard.writeText(`${window.location.origin}${p.previewUrl}`).then(() => setStatus('Ссылка скопирована.')).catch(() => setError('Не удалось скопировать ссылку.'))}>Скопировать ссылку</button><button className='btn-danger' onClick={async()=>{ if(!confirm('Отключить эту preset-ссылку? После этого её нельзя будет установить по ссылке.')) return; try { await readBffResponse(await fetch(`/bff/extension/scenario-presets/${encodeURIComponent(p.slug)}`, { method: 'DELETE' })); await load(); setStatus('Preset-ссылка отключена.'); } catch (e) { setError((e as Error).message); } }}>Отключить</button></div></div>)}</article> : null}
+    {shareLinks.length > 0 ? <article className='panel'><h3>Мои preset-ссылки</h3>{shareLinks.map((p) => <div key={p.slug} style={{display:'grid',gap:8,padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}}><p><a href={p.previewUrl}>{p.name}</a> ({p.slug})</p><p>Видимость: {p.visibility ?? 'unlisted'} · Категория: {p.category ?? '—'} · Теги: {(p.tags ?? []).join(', ') || '—'}</p><p>Установок: {p.installCount ?? 0} · Опубликован: {formatDate(p.publishedAt ?? undefined)} · Модерация: {p.moderationStatus ?? 'approved'}</p><div className='link-row'><a className='btn-ghost' href={p.previewUrl}>Открыть</a><button className='btn-ghost' onClick={() => navigator.clipboard.writeText(`${window.location.origin}${p.previewUrl}`).then(() => setStatus('Ссылка скопирована.')).catch(() => setError('Не удалось скопировать ссылку.'))}>Скопировать</button><button className='btn-ghost' onClick={() => void updatePreset(p.slug, { visibility: 'public' }, 'Preset опубликован.')}>Опубликовать</button><button className='btn-ghost' onClick={() => void updatePreset(p.slug, { visibility: 'unlisted' }, 'Preset переведен в unlisted.')}>Сделать unlisted</button><button className='btn-ghost' onClick={() => void updatePreset(p.slug, { visibility: 'private' }, 'Preset переведен в private.')}>Сделать приватным</button><button className='btn-danger' onClick={async()=>{ if(!confirm('Отключить эту preset-ссылку? После этого её нельзя будет установить по ссылке.')) return; try { await readBffResponse(await fetch(`/bff/extension/scenario-presets/${encodeURIComponent(p.slug)}`, { method: 'DELETE' })); await load(); setStatus('Preset-ссылка отключена.'); } catch (e) { setError((e as Error).message); } }}>Отключить</button></div><div className='link-row'><select defaultValue={p.category ?? ''} onChange={(e)=> void updatePreset(p.slug,{ category: e.target.value || null },'Категория обновлена.')}><option value=''>Без категории</option><option value='study'>study</option><option value='translation'>translation</option><option value='writing'>writing</option><option value='coding'>coding</option><option value='productivity'>productivity</option><option value='other'>other</option></select><input placeholder='tags через запятую' defaultValue={(p.tags ?? []).join(', ')} onBlur={(e)=> void updatePreset(p.slug,{ tags: e.target.value.split(',').map((x)=>x.trim()).filter(Boolean) },'Теги обновлены.')} /><select defaultValue={p.visibility ?? 'unlisted'} onChange={(e)=> void updatePreset(p.slug,{ visibility: e.target.value },'Видимость обновлена.')}><option value='public'>public</option><option value='unlisted'>unlisted</option><option value='private'>private</option></select></div></div>)}</article> : null}
     {open && editing ? <Editor scenario={editing} onCancel={() => setOpen(false)} onSave={save} /> : null}
   </div>;
 }
