@@ -26,9 +26,16 @@ interface PresetLink {
   name: string;
   previewUrl: string;
   visibility?: string;
+  category?: string | null;
+  tags?: string[];
   installCount?: number;
+  publishedAt?: string | null;
+  moderationStatus?: string;
   createdAt?: string;
 }
+const DEFAULT_SCENARIO_PROMPT_SYSTEM = 'You are a helpful assistant.';
+const DEFAULT_SCENARIO_PROMPT_USER = 'Selected text:\n{TEXT}\n\nComplete the requested task.';
+
 const defaults: Pick<ScenarioConfig, 'ai' | 'input' | 'output' | 'window'> = {
   ai: { provider: 'auto', model: null, temperature: 0.3, maxTokens: 700 },
   input: { type: 'selection_text' },
@@ -85,7 +92,7 @@ export function ExtensionScenariosClient() {
 
   function startCreate() {
     const now = new Date().toISOString();
-    setEditing({ schemaVersion: 1, name: '', description: '', buttonLabel: '', icon: '', enabled: true, showInSelectionMenu: true, menuOrder: 100, prompt: { system: '', user: '' }, ...defaults, createdAt: now, updatedAt: now });
+    setEditing({ schemaVersion: 1, name: '', description: '', buttonLabel: '', icon: '', enabled: true, showInSelectionMenu: true, menuOrder: 100, prompt: { system: DEFAULT_SCENARIO_PROMPT_SYSTEM, user: DEFAULT_SCENARIO_PROMPT_USER }, ...defaults, createdAt: now, updatedAt: now });
     setOpen(true);
   }
 
@@ -106,6 +113,21 @@ export function ExtensionScenariosClient() {
       setStatus(`Ссылка создана: ${data.preset.previewUrl}`);
       await load();
     } catch (e) { setError((e as Error).message); }
+  }
+
+
+  async function updatePreset(slug: string, patch: Record<string, unknown>, okMessage: string) {
+    try {
+      await readBffResponse(await fetch(`/bff/extension/scenario-presets/${encodeURIComponent(slug)}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(patch),
+      }));
+      await load();
+      setStatus(okMessage);
+    } catch (e) {
+      setError((e as Error).message);
+    }
   }
 
   async function remove(item: ScenarioConfig) {
@@ -143,8 +165,8 @@ export function ExtensionScenariosClient() {
       <button className='btn-ghost' onClick={exportJson}>Экспортировать JSON</button>
       <label className='btn-ghost' style={{ cursor: 'pointer' }}>Импортировать JSON<input type='file' accept='application/json' style={{ display: 'none' }} onChange={(e) => { const f = e.target.files?.[0]; if (f) void importJson(f); }} /></label>
     </div>
-    {loading ? <p>Загрузка…</p> : items.length === 0 ? <section className='empty-state'><p>У вас пока нет пользовательских сценариев. Создайте первый сценарий или синхронизируйте расширение.</p></section> : items.map((item) => <article key={item.id} className='panel'><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><div><h3>{item.icon ? `${item.icon} ` : ''}{item.name}</h3><p>{item.description}</p><p>Кнопка: {item.buttonLabel} · Модель: {item.ai?.model || 'по умолчанию'} · Порядок: {item.menuOrder}</p><p>Обновлено: {formatDate(item.updatedAt)}</p><p>{item.enabled ? 'Включён' : 'Выключен'} · {item.showInSelectionMenu ? 'В меню' : 'Скрыт'}</p></div><div className='link-row'><button className='btn-ghost' onClick={() => { setEditing(item); setOpen(true); }}>Редактировать</button><button className='btn-ghost' onClick={() => void toggleEnabled(item)}>{item.enabled ? 'Отключить' : 'Включить'}</button><button className='btn-ghost' onClick={() => void createPreset(item)}>Поделиться</button><button className='btn-danger' onClick={() => void remove(item)}>Удалить</button></div></div></article>)}
-    {shareLinks.length > 0 ? <article className='panel'><h3>Мои preset-ссылки</h3>{shareLinks.map((p) => <div key={p.slug} style={{display:'grid',gap:6,padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}}><p><a href={p.previewUrl}>{p.name}</a> ({p.slug})</p><p>Видимость: {p.visibility ?? 'unlisted'} · Установок: {p.installCount ?? 0} · Создан: {formatDate(p.createdAt)}</p><div className='link-row'><a className='btn-ghost' href={p.previewUrl}>Открыть</a><button className='btn-ghost' onClick={() => navigator.clipboard.writeText(`${window.location.origin}${p.previewUrl}`).then(() => setStatus('Ссылка скопирована.')).catch(() => setError('Не удалось скопировать ссылку.'))}>Скопировать ссылку</button><button className='btn-danger' onClick={async()=>{ if(!confirm('Отключить эту preset-ссылку? После этого её нельзя будет установить по ссылке.')) return; try { await readBffResponse(await fetch(`/bff/extension/scenario-presets/${encodeURIComponent(p.slug)}`, { method: 'DELETE' })); await load(); setStatus('Preset-ссылка отключена.'); } catch (e) { setError((e as Error).message); } }}>Отключить</button></div></div>)}</article> : null}
+    {loading ? <p>Загрузка…</p> : items.length === 0 ? <section className='empty-state'><p>У вас пока нет пользовательских сценариев. Создайте первый сценарий или синхронизируйте расширение.</p></section> : items.map((item) => <article key={item.id} className='panel'><div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}><div><h3>{item.icon ? `${item.icon} ` : ''}{item.name}</h3><p>{item.description}</p><p>Кнопка: {item.buttonLabel} · Модель: {item.ai?.model || 'по умолчанию'} · Порядок: {item.menuOrder}</p><p>Обновлено: {formatDate(item.updatedAt)}</p><p>{item.enabled ? 'Включён' : 'Выключен'} · {item.showInSelectionMenu ? 'В меню' : 'Скрыт'}</p></div><div className='link-row'><button className='btn-ghost' onClick={() => { setEditing({ ...item, prompt: { system: item.prompt?.system?.trim() ? item.prompt.system : DEFAULT_SCENARIO_PROMPT_SYSTEM, user: item.prompt?.user?.trim() ? item.prompt.user : DEFAULT_SCENARIO_PROMPT_USER } }); setOpen(true); }}>Редактировать</button><button className='btn-ghost' onClick={() => void toggleEnabled(item)}>{item.enabled ? 'Отключить' : 'Включить'}</button><button className='btn-ghost' onClick={() => void createPreset(item)}>Поделиться</button><button className='btn-danger' onClick={() => void remove(item)}>Удалить</button></div></div></article>)}
+    {shareLinks.length > 0 ? <article className='panel'><h3>Мои preset-ссылки</h3>{shareLinks.map((p) => <div key={p.slug} style={{display:'grid',gap:8,padding:'8px 0',borderBottom:'1px solid rgba(255,255,255,.08)'}}><p><a href={p.previewUrl}>{p.name}</a> ({p.slug})</p><p>Видимость: {p.visibility ?? 'unlisted'} · Категория: {p.category ?? '—'} · Теги: {(p.tags ?? []).join(', ') || '—'}</p><p>Установок: {p.installCount ?? 0} · Опубликован: {formatDate(p.publishedAt ?? undefined)} · Модерация: {p.moderationStatus ?? 'approved'}</p><div className='link-row'><a className='btn-ghost' href={p.previewUrl}>Открыть</a><button className='btn-ghost' onClick={() => navigator.clipboard.writeText(`${window.location.origin}${p.previewUrl}`).then(() => setStatus('Ссылка скопирована.')).catch(() => setError('Не удалось скопировать ссылку.'))}>Скопировать</button><button className='btn-ghost' onClick={() => { if(!confirm('Опубликовать preset в публичный каталог? Другие пользователи смогут найти и установить его.')) return; void updatePreset(p.slug, { visibility: 'public' }, 'Preset опубликован.'); }}>Опубликовать</button><button className='btn-ghost' onClick={() => void updatePreset(p.slug, { visibility: 'unlisted' }, 'Preset переведен в unlisted.')}>Сделать unlisted</button><button className='btn-ghost' onClick={() => void updatePreset(p.slug, { visibility: 'private' }, 'Preset переведен в private.')}>Сделать приватным</button><button className='btn-danger' onClick={async()=>{ if(!confirm('Отключить эту preset-ссылку? После этого её нельзя будет установить по ссылке.')) return; try { await readBffResponse(await fetch(`/bff/extension/scenario-presets/${encodeURIComponent(p.slug)}`, { method: 'DELETE' })); await load(); setStatus('Preset-ссылка отключена.'); } catch (e) { setError((e as Error).message); } }}>Отключить</button></div><div className='link-row'><select defaultValue={p.category ?? ''} onChange={(e)=> void updatePreset(p.slug,{ category: e.target.value || null },'Категория обновлена.')}><option value=''>Без категории</option><option value='study'>study</option><option value='translation'>translation</option><option value='writing'>writing</option><option value='coding'>coding</option><option value='productivity'>productivity</option><option value='other'>other</option></select><input placeholder='tags через запятую' defaultValue={(p.tags ?? []).join(', ')} onBlur={(e)=> void updatePreset(p.slug,{ tags: e.target.value.split(',').map((x)=>x.trim()).filter(Boolean) },'Теги обновлены.')} /><select defaultValue={(p.visibility === 'private' ? 'private' : 'unlisted')} onChange={(e)=> void updatePreset(p.slug,{ visibility: e.target.value },'Видимость обновлена.')}><option value='unlisted'>unlisted</option><option value='private'>private</option></select></div></div>)}</article> : null}
     {open && editing ? <Editor scenario={editing} onCancel={() => setOpen(false)} onSave={save} /> : null}
   </div>;
 }
@@ -183,6 +205,6 @@ function Editor({ scenario, onCancel, onSave }: { scenario: ScenarioConfig; onCa
       <select value={form.window.resultPosition} onChange={(e) => setForm({ ...form, window: { ...form.window, resultPosition: e.target.value as ScenarioConfig['window']['resultPosition'] } })}><option value='inherit'>Наследовать настройки расширения</option><option value='under_action'>Сразу под меню</option><option value='floating'>В активной зоне или кастомном месте</option></select>
     </div>
     <p>Подсказки: {'{TEXT}'}, {'{PAGE_TITLE}'}, {'{PAGE_URL}'}, {'{LANGUAGE}'}</p>
-    <div className='link-row'><button className='btn-primary' disabled={Boolean(validation)} onClick={async () => { if (validation) return setErr(validation); try { await onSave({ ...form, schemaVersion: 1, ...defaults, ai: { ...form.ai, provider: 'auto', model: form.ai.model?.trim() ? form.ai.model.trim() : null }, input: defaults.input, output: defaults.output, window: { resultPosition: form.window.resultPosition, theme: 'inherit' } }); } catch (e) { setErr((e as Error).message); } }}>Сохранить</button><button className='btn-ghost' onClick={onCancel}>Отмена</button></div>
+    <div className='link-row'><button className='btn-primary' disabled={Boolean(validation)} onClick={async () => { if (validation) return setErr(validation); try { await onSave({ ...form, schemaVersion: 1, ai: { ...form.ai, provider: 'auto', model: form.ai.model?.trim() ? form.ai.model.trim() : null, temperature: Number(form.ai.temperature), maxTokens: Number(form.ai.maxTokens) }, input: defaults.input, output: defaults.output, window: { resultPosition: form.window.resultPosition, theme: 'inherit' } }); } catch (e) { setErr((e as Error).message); } }}>Сохранить</button><button className='btn-ghost' onClick={onCancel}>Отмена</button></div>
   </article>;
 }
