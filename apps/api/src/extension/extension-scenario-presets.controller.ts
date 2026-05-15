@@ -3,7 +3,7 @@ import { parseBearerToken } from '@quizmind/auth';
 import { AuthService } from '../auth/auth.service';
 import { ExtensionScenarioPresetsService } from './extension-scenario-presets.service';
 
-@Controller('api/extension/scenario-presets')
+@Controller('extension/scenario-presets')
 export class ExtensionScenarioPresetsController {
   constructor(private readonly auth: AuthService, private readonly svc: ExtensionScenarioPresetsService) {}
   @Post('from-scenario/:scenarioId') async fromScenario(@Headers('authorization') a:string|undefined,@Param('scenarioId') scenarioId:string,@Body() body:any){ return this.svc.createFromScenario(await this.requireSession(a), scenarioId, body); }

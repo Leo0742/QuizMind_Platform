@@ -3,37 +3,37 @@ import { parseBearerToken } from '@quizmind/auth';
 import { AuthService } from '../auth/auth.service';
 import { ExtensionScenariosService } from './extension-scenarios.service';
 
-@Controller('api')
+@Controller('extension/scenarios')
 export class ExtensionScenariosController {
   constructor(private readonly authService: AuthService, private readonly service: ExtensionScenariosService) {}
 
-  @Get('extension/scenarios')
+  @Get()
   async list(@Headers('authorization') authorization?: string) { return this.service.list(await this.requireSession(authorization)); }
 
-  @Get('extension/scenarios/sync')
+  @Get('sync')
   async sync(@Headers('authorization') authorization?: string) { return this.service.sync(await this.requireSession(authorization)); }
 
-  @Post('extension/scenarios')
+  @Post()
   async create(@Headers('authorization') authorization: string | undefined, @Body() body: { scenario?: unknown }) {
     return this.service.create(await this.requireSession(authorization), body?.scenario);
   }
 
-  @Put('extension/scenarios/:scenarioId')
+  @Put(':scenarioId')
   async put(@Headers('authorization') authorization: string | undefined, @Param('scenarioId') scenarioId: string, @Body() body: { scenario?: unknown }) {
     return this.service.put(await this.requireSession(authorization), scenarioId, body?.scenario);
   }
 
-  @Patch('extension/scenarios/:scenarioId')
+  @Patch(':scenarioId')
   async patch(@Headers('authorization') authorization: string | undefined, @Param('scenarioId') scenarioId: string, @Body() body: { patch?: unknown }) {
     return this.service.patch(await this.requireSession(authorization), scenarioId, body?.patch);
   }
 
-  @Delete('extension/scenarios/:scenarioId')
+  @Delete(':scenarioId')
   async remove(@Headers('authorization') authorization: string | undefined, @Param('scenarioId') scenarioId: string) {
     return this.service.remove(await this.requireSession(authorization), scenarioId);
   }
 
-  @Post('extension/scenarios/bulk')
+  @Post('bulk')
   async bulk(@Headers('authorization') authorization: string | undefined, @Body() body: unknown) {
     return this.service.bulk(await this.requireSession(authorization), body);
   }
