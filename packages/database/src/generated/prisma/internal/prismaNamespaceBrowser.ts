@@ -80,6 +80,8 @@ export const ModelName = {
   ExtensionCompatibilityRule: 'ExtensionCompatibilityRule',
   ExtensionInstallation: 'ExtensionInstallation',
   ExtensionInstallationSession: 'ExtensionInstallationSession',
+  UserExtensionScenario: 'UserExtensionScenario',
+  ExtensionScenarioPreset: 'ExtensionScenarioPreset',
   ProviderCredential: 'ProviderCredential',
   AiProviderPolicy: 'AiProviderPolicy',
   ExtensionTelemetry: 'ExtensionTelemetry',
@@ -568,6 +570,49 @@ export const ExtensionInstallationSessionScalarFieldEnum = {
 } as const
 
 export type ExtensionInstallationSessionScalarFieldEnum = (typeof ExtensionInstallationSessionScalarFieldEnum)[keyof typeof ExtensionInstallationSessionScalarFieldEnum]
+
+
+export const UserExtensionScenarioScalarFieldEnum = {
+  id: 'id',
+  userId: 'userId',
+  scenarioId: 'scenarioId',
+  schemaVersion: 'schemaVersion',
+  name: 'name',
+  description: 'description',
+  buttonLabel: 'buttonLabel',
+  icon: 'icon',
+  enabled: 'enabled',
+  showInSelectionMenu: 'showInSelectionMenu',
+  menuOrder: 'menuOrder',
+  configJson: 'configJson',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  deletedAt: 'deletedAt'
+} as const
+
+export type UserExtensionScenarioScalarFieldEnum = (typeof UserExtensionScenarioScalarFieldEnum)[keyof typeof UserExtensionScenarioScalarFieldEnum]
+
+
+export const ExtensionScenarioPresetScalarFieldEnum = {
+  id: 'id',
+  ownerUserId: 'ownerUserId',
+  sourceScenarioId: 'sourceScenarioId',
+  slug: 'slug',
+  name: 'name',
+  description: 'description',
+  buttonLabel: 'buttonLabel',
+  icon: 'icon',
+  schemaVersion: 'schemaVersion',
+  presetVersion: 'presetVersion',
+  visibility: 'visibility',
+  configJson: 'configJson',
+  installCount: 'installCount',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  disabledAt: 'disabledAt'
+} as const
+
+export type ExtensionScenarioPresetScalarFieldEnum = (typeof ExtensionScenarioPresetScalarFieldEnum)[keyof typeof ExtensionScenarioPresetScalarFieldEnum]
 
 
 export const ProviderCredentialScalarFieldEnum = {

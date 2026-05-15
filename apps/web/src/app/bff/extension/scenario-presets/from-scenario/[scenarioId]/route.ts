@@ -1,0 +1,4 @@
+import { NextResponse } from 'next/server';
+import { API_URL } from '../../../../../../lib/api';
+import { getAccessTokenFromCookies } from '../../../../../../lib/auth-session';
+export async function POST(request:Request,ctx:{params:Promise<{scenarioId:string}>}){ const token=await getAccessTokenFromCookies(); if(!token) return NextResponse.json({ok:false,error:{message:'Sign in required'}},{status:401}); const {scenarioId}=await ctx.params; const body=await request.json().catch(()=>({})); const res=await fetch(`${API_URL}/extension/scenario-presets/from-scenario/${encodeURIComponent(scenarioId)}`,{method:'POST',headers:{authorization:`Bearer ${token}`,'content-type':'application/json'},body:JSON.stringify(body)}); const payload=await res.json().catch(()=>({ok:false,error:{message:'Invalid upstream response'}})); return NextResponse.json(payload,{status:res.status}); }
