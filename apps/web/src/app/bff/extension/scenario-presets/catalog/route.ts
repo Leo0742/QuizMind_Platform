@@ -1,0 +1,2 @@
+import { NextResponse } from 'next/server'; import { API_URL } from '../../../../../lib/api';
+export async function GET(request:Request){ const url=new URL(request.url); const res=await fetch(`${API_URL}/extension/scenario-presets/catalog?${url.searchParams.toString()}`,{cache:'no-store'}); const p=await res.json().catch(()=>({ok:false,error:{message:'Invalid upstream response'}})); return NextResponse.json(p,{status:res.status}); }

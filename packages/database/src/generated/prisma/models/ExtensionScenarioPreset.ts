@@ -50,6 +50,12 @@ export type ExtensionScenarioPresetMinAggregateOutputType = {
   schemaVersion: number | null
   presetVersion: number | null
   visibility: string | null
+  category: string | null
+  publishedAt: Date | null
+  featuredAt: Date | null
+  moderationStatus: string | null
+  sourceLanguage: string | null
+  targetLanguage: string | null
   installCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -68,6 +74,12 @@ export type ExtensionScenarioPresetMaxAggregateOutputType = {
   schemaVersion: number | null
   presetVersion: number | null
   visibility: string | null
+  category: string | null
+  publishedAt: Date | null
+  featuredAt: Date | null
+  moderationStatus: string | null
+  sourceLanguage: string | null
+  targetLanguage: string | null
   installCount: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -86,6 +98,13 @@ export type ExtensionScenarioPresetCountAggregateOutputType = {
   schemaVersion: number
   presetVersion: number
   visibility: number
+  category: number
+  tags: number
+  publishedAt: number
+  featuredAt: number
+  moderationStatus: number
+  sourceLanguage: number
+  targetLanguage: number
   configJson: number
   installCount: number
   createdAt: number
@@ -119,6 +138,12 @@ export type ExtensionScenarioPresetMinAggregateInputType = {
   schemaVersion?: true
   presetVersion?: true
   visibility?: true
+  category?: true
+  publishedAt?: true
+  featuredAt?: true
+  moderationStatus?: true
+  sourceLanguage?: true
+  targetLanguage?: true
   installCount?: true
   createdAt?: true
   updatedAt?: true
@@ -137,6 +162,12 @@ export type ExtensionScenarioPresetMaxAggregateInputType = {
   schemaVersion?: true
   presetVersion?: true
   visibility?: true
+  category?: true
+  publishedAt?: true
+  featuredAt?: true
+  moderationStatus?: true
+  sourceLanguage?: true
+  targetLanguage?: true
   installCount?: true
   createdAt?: true
   updatedAt?: true
@@ -155,6 +186,13 @@ export type ExtensionScenarioPresetCountAggregateInputType = {
   schemaVersion?: true
   presetVersion?: true
   visibility?: true
+  category?: true
+  tags?: true
+  publishedAt?: true
+  featuredAt?: true
+  moderationStatus?: true
+  sourceLanguage?: true
+  targetLanguage?: true
   configJson?: true
   installCount?: true
   createdAt?: true
@@ -261,6 +299,13 @@ export type ExtensionScenarioPresetGroupByOutputType = {
   schemaVersion: number
   presetVersion: number
   visibility: string
+  category: string | null
+  tags: runtime.JsonValue | null
+  publishedAt: Date | null
+  featuredAt: Date | null
+  moderationStatus: string
+  sourceLanguage: string | null
+  targetLanguage: string | null
   configJson: runtime.JsonValue
   installCount: number
   createdAt: Date
@@ -303,6 +348,13 @@ export type ExtensionScenarioPresetWhereInput = {
   schemaVersion?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   presetVersion?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   visibility?: Prisma.StringFilter<"ExtensionScenarioPreset"> | string
+  category?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
+  tags?: Prisma.JsonNullableFilter<"ExtensionScenarioPreset">
+  publishedAt?: Prisma.DateTimeNullableFilter<"ExtensionScenarioPreset"> | Date | string | null
+  featuredAt?: Prisma.DateTimeNullableFilter<"ExtensionScenarioPreset"> | Date | string | null
+  moderationStatus?: Prisma.StringFilter<"ExtensionScenarioPreset"> | string
+  sourceLanguage?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
+  targetLanguage?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
   configJson?: Prisma.JsonFilter<"ExtensionScenarioPreset">
   installCount?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   createdAt?: Prisma.DateTimeFilter<"ExtensionScenarioPreset"> | Date | string
@@ -323,6 +375,13 @@ export type ExtensionScenarioPresetOrderByWithRelationInput = {
   schemaVersion?: Prisma.SortOrder
   presetVersion?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
+  category?: Prisma.SortOrderInput | Prisma.SortOrder
+  tags?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  featuredAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  moderationStatus?: Prisma.SortOrder
+  sourceLanguage?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetLanguage?: Prisma.SortOrderInput | Prisma.SortOrder
   configJson?: Prisma.SortOrder
   installCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -346,6 +405,13 @@ export type ExtensionScenarioPresetWhereUniqueInput = Prisma.AtLeast<{
   schemaVersion?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   presetVersion?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   visibility?: Prisma.StringFilter<"ExtensionScenarioPreset"> | string
+  category?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
+  tags?: Prisma.JsonNullableFilter<"ExtensionScenarioPreset">
+  publishedAt?: Prisma.DateTimeNullableFilter<"ExtensionScenarioPreset"> | Date | string | null
+  featuredAt?: Prisma.DateTimeNullableFilter<"ExtensionScenarioPreset"> | Date | string | null
+  moderationStatus?: Prisma.StringFilter<"ExtensionScenarioPreset"> | string
+  sourceLanguage?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
+  targetLanguage?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
   configJson?: Prisma.JsonFilter<"ExtensionScenarioPreset">
   installCount?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   createdAt?: Prisma.DateTimeFilter<"ExtensionScenarioPreset"> | Date | string
@@ -366,6 +432,13 @@ export type ExtensionScenarioPresetOrderByWithAggregationInput = {
   schemaVersion?: Prisma.SortOrder
   presetVersion?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
+  category?: Prisma.SortOrderInput | Prisma.SortOrder
+  tags?: Prisma.SortOrderInput | Prisma.SortOrder
+  publishedAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  featuredAt?: Prisma.SortOrderInput | Prisma.SortOrder
+  moderationStatus?: Prisma.SortOrder
+  sourceLanguage?: Prisma.SortOrderInput | Prisma.SortOrder
+  targetLanguage?: Prisma.SortOrderInput | Prisma.SortOrder
   configJson?: Prisma.SortOrder
   installCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -393,6 +466,13 @@ export type ExtensionScenarioPresetScalarWhereWithAggregatesInput = {
   schemaVersion?: Prisma.IntWithAggregatesFilter<"ExtensionScenarioPreset"> | number
   presetVersion?: Prisma.IntWithAggregatesFilter<"ExtensionScenarioPreset"> | number
   visibility?: Prisma.StringWithAggregatesFilter<"ExtensionScenarioPreset"> | string
+  category?: Prisma.StringNullableWithAggregatesFilter<"ExtensionScenarioPreset"> | string | null
+  tags?: Prisma.JsonNullableWithAggregatesFilter<"ExtensionScenarioPreset">
+  publishedAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ExtensionScenarioPreset"> | Date | string | null
+  featuredAt?: Prisma.DateTimeNullableWithAggregatesFilter<"ExtensionScenarioPreset"> | Date | string | null
+  moderationStatus?: Prisma.StringWithAggregatesFilter<"ExtensionScenarioPreset"> | string
+  sourceLanguage?: Prisma.StringNullableWithAggregatesFilter<"ExtensionScenarioPreset"> | string | null
+  targetLanguage?: Prisma.StringNullableWithAggregatesFilter<"ExtensionScenarioPreset"> | string | null
   configJson?: Prisma.JsonWithAggregatesFilter<"ExtensionScenarioPreset">
   installCount?: Prisma.IntWithAggregatesFilter<"ExtensionScenarioPreset"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"ExtensionScenarioPreset"> | Date | string
@@ -411,6 +491,13 @@ export type ExtensionScenarioPresetCreateInput = {
   schemaVersion?: number
   presetVersion?: number
   visibility?: string
+  category?: string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Date | string | null
+  featuredAt?: Date | string | null
+  moderationStatus?: string
+  sourceLanguage?: string | null
+  targetLanguage?: string | null
   configJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: number
   createdAt?: Date | string
@@ -431,6 +518,13 @@ export type ExtensionScenarioPresetUncheckedCreateInput = {
   schemaVersion?: number
   presetVersion?: number
   visibility?: string
+  category?: string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Date | string | null
+  featuredAt?: Date | string | null
+  moderationStatus?: string
+  sourceLanguage?: string | null
+  targetLanguage?: string | null
   configJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: number
   createdAt?: Date | string
@@ -449,6 +543,13 @@ export type ExtensionScenarioPresetUpdateInput = {
   schemaVersion?: Prisma.IntFieldUpdateOperationsInput | number
   presetVersion?: Prisma.IntFieldUpdateOperationsInput | number
   visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  featuredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   configJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -469,6 +570,13 @@ export type ExtensionScenarioPresetUncheckedUpdateInput = {
   schemaVersion?: Prisma.IntFieldUpdateOperationsInput | number
   presetVersion?: Prisma.IntFieldUpdateOperationsInput | number
   visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  featuredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   configJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -488,6 +596,13 @@ export type ExtensionScenarioPresetCreateManyInput = {
   schemaVersion?: number
   presetVersion?: number
   visibility?: string
+  category?: string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Date | string | null
+  featuredAt?: Date | string | null
+  moderationStatus?: string
+  sourceLanguage?: string | null
+  targetLanguage?: string | null
   configJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: number
   createdAt?: Date | string
@@ -506,6 +621,13 @@ export type ExtensionScenarioPresetUpdateManyMutationInput = {
   schemaVersion?: Prisma.IntFieldUpdateOperationsInput | number
   presetVersion?: Prisma.IntFieldUpdateOperationsInput | number
   visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  featuredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   configJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -525,6 +647,13 @@ export type ExtensionScenarioPresetUncheckedUpdateManyInput = {
   schemaVersion?: Prisma.IntFieldUpdateOperationsInput | number
   presetVersion?: Prisma.IntFieldUpdateOperationsInput | number
   visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  featuredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   configJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -554,6 +683,13 @@ export type ExtensionScenarioPresetCountOrderByAggregateInput = {
   schemaVersion?: Prisma.SortOrder
   presetVersion?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
+  category?: Prisma.SortOrder
+  tags?: Prisma.SortOrder
+  publishedAt?: Prisma.SortOrder
+  featuredAt?: Prisma.SortOrder
+  moderationStatus?: Prisma.SortOrder
+  sourceLanguage?: Prisma.SortOrder
+  targetLanguage?: Prisma.SortOrder
   configJson?: Prisma.SortOrder
   installCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
@@ -579,6 +715,12 @@ export type ExtensionScenarioPresetMaxOrderByAggregateInput = {
   schemaVersion?: Prisma.SortOrder
   presetVersion?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
+  category?: Prisma.SortOrder
+  publishedAt?: Prisma.SortOrder
+  featuredAt?: Prisma.SortOrder
+  moderationStatus?: Prisma.SortOrder
+  sourceLanguage?: Prisma.SortOrder
+  targetLanguage?: Prisma.SortOrder
   installCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -597,6 +739,12 @@ export type ExtensionScenarioPresetMinOrderByAggregateInput = {
   schemaVersion?: Prisma.SortOrder
   presetVersion?: Prisma.SortOrder
   visibility?: Prisma.SortOrder
+  category?: Prisma.SortOrder
+  publishedAt?: Prisma.SortOrder
+  featuredAt?: Prisma.SortOrder
+  moderationStatus?: Prisma.SortOrder
+  sourceLanguage?: Prisma.SortOrder
+  targetLanguage?: Prisma.SortOrder
   installCount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -662,6 +810,13 @@ export type ExtensionScenarioPresetCreateWithoutOwnerInput = {
   schemaVersion?: number
   presetVersion?: number
   visibility?: string
+  category?: string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Date | string | null
+  featuredAt?: Date | string | null
+  moderationStatus?: string
+  sourceLanguage?: string | null
+  targetLanguage?: string | null
   configJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: number
   createdAt?: Date | string
@@ -680,6 +835,13 @@ export type ExtensionScenarioPresetUncheckedCreateWithoutOwnerInput = {
   schemaVersion?: number
   presetVersion?: number
   visibility?: string
+  category?: string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Date | string | null
+  featuredAt?: Date | string | null
+  moderationStatus?: string
+  sourceLanguage?: string | null
+  targetLanguage?: string | null
   configJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: number
   createdAt?: Date | string
@@ -728,6 +890,13 @@ export type ExtensionScenarioPresetScalarWhereInput = {
   schemaVersion?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   presetVersion?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   visibility?: Prisma.StringFilter<"ExtensionScenarioPreset"> | string
+  category?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
+  tags?: Prisma.JsonNullableFilter<"ExtensionScenarioPreset">
+  publishedAt?: Prisma.DateTimeNullableFilter<"ExtensionScenarioPreset"> | Date | string | null
+  featuredAt?: Prisma.DateTimeNullableFilter<"ExtensionScenarioPreset"> | Date | string | null
+  moderationStatus?: Prisma.StringFilter<"ExtensionScenarioPreset"> | string
+  sourceLanguage?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
+  targetLanguage?: Prisma.StringNullableFilter<"ExtensionScenarioPreset"> | string | null
   configJson?: Prisma.JsonFilter<"ExtensionScenarioPreset">
   installCount?: Prisma.IntFilter<"ExtensionScenarioPreset"> | number
   createdAt?: Prisma.DateTimeFilter<"ExtensionScenarioPreset"> | Date | string
@@ -746,6 +915,13 @@ export type ExtensionScenarioPresetCreateManyOwnerInput = {
   schemaVersion?: number
   presetVersion?: number
   visibility?: string
+  category?: string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Date | string | null
+  featuredAt?: Date | string | null
+  moderationStatus?: string
+  sourceLanguage?: string | null
+  targetLanguage?: string | null
   configJson: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: number
   createdAt?: Date | string
@@ -764,6 +940,13 @@ export type ExtensionScenarioPresetUpdateWithoutOwnerInput = {
   schemaVersion?: Prisma.IntFieldUpdateOperationsInput | number
   presetVersion?: Prisma.IntFieldUpdateOperationsInput | number
   visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  featuredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   configJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -782,6 +965,13 @@ export type ExtensionScenarioPresetUncheckedUpdateWithoutOwnerInput = {
   schemaVersion?: Prisma.IntFieldUpdateOperationsInput | number
   presetVersion?: Prisma.IntFieldUpdateOperationsInput | number
   visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  featuredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   configJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -800,6 +990,13 @@ export type ExtensionScenarioPresetUncheckedUpdateManyWithoutOwnerInput = {
   schemaVersion?: Prisma.IntFieldUpdateOperationsInput | number
   presetVersion?: Prisma.IntFieldUpdateOperationsInput | number
   visibility?: Prisma.StringFieldUpdateOperationsInput | string
+  category?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  tags?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
+  publishedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  featuredAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  moderationStatus?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  targetLanguage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   configJson?: Prisma.JsonNullValueInput | runtime.InputJsonValue
   installCount?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -821,6 +1018,13 @@ export type ExtensionScenarioPresetSelect<ExtArgs extends runtime.Types.Extensio
   schemaVersion?: boolean
   presetVersion?: boolean
   visibility?: boolean
+  category?: boolean
+  tags?: boolean
+  publishedAt?: boolean
+  featuredAt?: boolean
+  moderationStatus?: boolean
+  sourceLanguage?: boolean
+  targetLanguage?: boolean
   configJson?: boolean
   installCount?: boolean
   createdAt?: boolean
@@ -841,6 +1045,13 @@ export type ExtensionScenarioPresetSelectCreateManyAndReturn<ExtArgs extends run
   schemaVersion?: boolean
   presetVersion?: boolean
   visibility?: boolean
+  category?: boolean
+  tags?: boolean
+  publishedAt?: boolean
+  featuredAt?: boolean
+  moderationStatus?: boolean
+  sourceLanguage?: boolean
+  targetLanguage?: boolean
   configJson?: boolean
   installCount?: boolean
   createdAt?: boolean
@@ -861,6 +1072,13 @@ export type ExtensionScenarioPresetSelectUpdateManyAndReturn<ExtArgs extends run
   schemaVersion?: boolean
   presetVersion?: boolean
   visibility?: boolean
+  category?: boolean
+  tags?: boolean
+  publishedAt?: boolean
+  featuredAt?: boolean
+  moderationStatus?: boolean
+  sourceLanguage?: boolean
+  targetLanguage?: boolean
   configJson?: boolean
   installCount?: boolean
   createdAt?: boolean
@@ -881,6 +1099,13 @@ export type ExtensionScenarioPresetSelectScalar = {
   schemaVersion?: boolean
   presetVersion?: boolean
   visibility?: boolean
+  category?: boolean
+  tags?: boolean
+  publishedAt?: boolean
+  featuredAt?: boolean
+  moderationStatus?: boolean
+  sourceLanguage?: boolean
+  targetLanguage?: boolean
   configJson?: boolean
   installCount?: boolean
   createdAt?: boolean
@@ -888,7 +1113,7 @@ export type ExtensionScenarioPresetSelectScalar = {
   disabledAt?: boolean
 }
 
-export type ExtensionScenarioPresetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerUserId" | "sourceScenarioId" | "slug" | "name" | "description" | "buttonLabel" | "icon" | "schemaVersion" | "presetVersion" | "visibility" | "configJson" | "installCount" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["extensionScenarioPreset"]>
+export type ExtensionScenarioPresetOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "ownerUserId" | "sourceScenarioId" | "slug" | "name" | "description" | "buttonLabel" | "icon" | "schemaVersion" | "presetVersion" | "visibility" | "category" | "tags" | "publishedAt" | "featuredAt" | "moderationStatus" | "sourceLanguage" | "targetLanguage" | "configJson" | "installCount" | "createdAt" | "updatedAt" | "disabledAt", ExtArgs["result"]["extensionScenarioPreset"]>
 export type ExtensionScenarioPresetInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   owner?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -916,6 +1141,13 @@ export type $ExtensionScenarioPresetPayload<ExtArgs extends runtime.Types.Extens
     schemaVersion: number
     presetVersion: number
     visibility: string
+    category: string | null
+    tags: runtime.JsonValue | null
+    publishedAt: Date | null
+    featuredAt: Date | null
+    moderationStatus: string
+    sourceLanguage: string | null
+    targetLanguage: string | null
     configJson: runtime.JsonValue
     installCount: number
     createdAt: Date
@@ -1356,6 +1588,13 @@ export interface ExtensionScenarioPresetFieldRefs {
   readonly schemaVersion: Prisma.FieldRef<"ExtensionScenarioPreset", 'Int'>
   readonly presetVersion: Prisma.FieldRef<"ExtensionScenarioPreset", 'Int'>
   readonly visibility: Prisma.FieldRef<"ExtensionScenarioPreset", 'String'>
+  readonly category: Prisma.FieldRef<"ExtensionScenarioPreset", 'String'>
+  readonly tags: Prisma.FieldRef<"ExtensionScenarioPreset", 'Json'>
+  readonly publishedAt: Prisma.FieldRef<"ExtensionScenarioPreset", 'DateTime'>
+  readonly featuredAt: Prisma.FieldRef<"ExtensionScenarioPreset", 'DateTime'>
+  readonly moderationStatus: Prisma.FieldRef<"ExtensionScenarioPreset", 'String'>
+  readonly sourceLanguage: Prisma.FieldRef<"ExtensionScenarioPreset", 'String'>
+  readonly targetLanguage: Prisma.FieldRef<"ExtensionScenarioPreset", 'String'>
   readonly configJson: Prisma.FieldRef<"ExtensionScenarioPreset", 'Json'>
   readonly installCount: Prisma.FieldRef<"ExtensionScenarioPreset", 'Int'>
   readonly createdAt: Prisma.FieldRef<"ExtensionScenarioPreset", 'DateTime'>

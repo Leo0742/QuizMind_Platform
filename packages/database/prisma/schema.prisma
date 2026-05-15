@@ -623,6 +623,13 @@ model ExtensionScenarioPreset {
   schemaVersion    Int      @default(1)
   presetVersion    Int      @default(1)
   visibility       String   @default("unlisted")
+  category         String?
+  tags             Json?
+  publishedAt      DateTime?
+  featuredAt       DateTime?
+  moderationStatus String   @default("approved")
+  sourceLanguage   String?
+  targetLanguage   String?
   configJson       Json
   installCount     Int      @default(0)
   createdAt        DateTime @default(now())

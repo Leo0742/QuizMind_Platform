@@ -7,50 +7,13 @@ import { ExtensionScenariosService } from './extension-scenarios.service';
 
 @Injectable()
 export class ExtensionScenarioPresetsService {
-  constructor(
-    @Inject(ExtensionScenarioPresetsRepository) private readonly presets: ExtensionScenarioPresetsRepository,
-    @Inject(ExtensionScenariosRepository) private readonly scenarios: ExtensionScenariosRepository,
-    @Inject(ExtensionScenariosService) private readonly scenarioService: ExtensionScenariosService,
-  ) {}
-
-  async createFromScenario(session: CurrentSessionSnapshot, scenarioId: string, raw?: { visibility?: string; name?: string; description?: string }) {
-    const scenario = await this.scenarios.findAnyByUserAndScenarioId(session.user.id, scenarioId);
-    if (!scenario || scenario.deletedAt) throw new NotFoundException('Scenario not found');
-    const normalized = this.scenarioService.normalizeScenarioConfig(scenario.configJson, { existingConfig: scenario.configJson as any });
-    const preset = await this.presets.create({ owner: { connect: { id: session.user.id } }, sourceScenarioId: scenarioId, slug: `p_${randomUUID()}`, name: raw?.name?.trim() || normalized.name, description: raw?.description?.trim() || normalized.description, buttonLabel: normalized.buttonLabel, icon: normalized.icon, schemaVersion: 1, presetVersion: 1, visibility: raw?.visibility === 'private' ? 'private' : 'unlisted', configJson: normalized as any });
-    return { preset: { slug: preset.slug, name: preset.name, description: preset.description, buttonLabel: preset.buttonLabel, icon: preset.icon, visibility: preset.visibility, previewUrl: `/extension/presets/${preset.slug}` } };
-  }
-
-  async mine(session: CurrentSessionSnapshot) { return { items: (await this.presets.listMine(session.user.id)).map((p) => ({ slug:p.slug,name:p.name,description:p.description,buttonLabel:p.buttonLabel,icon:p.icon,visibility:p.visibility,installCount:p.installCount,createdAt:p.createdAt,updatedAt:p.updatedAt,previewUrl:`/extension/presets/${p.slug}` })) }; }
-
-  async preview(slug: string, session?: CurrentSessionSnapshot | null) {
-    const p = await this.presets.findBySlug(slug); if (!p || p.disabledAt || p.visibility === 'disabled') throw new NotFoundException('Preset not found');
-    if (p.visibility === 'private' && session?.user.id !== p.ownerUserId) throw new NotFoundException('Preset not found');
-    const cfg = p.configJson as any;
-    return { preset: { slug:p.slug,name:p.name,description:p.description,buttonLabel:p.buttonLabel,icon:p.icon,schemaVersion:p.schemaVersion,presetVersion:p.presetVersion,visibility:p.visibility,installCount:p.installCount,createdAt:p.createdAt,updatedAt:p.updatedAt,scenarioPreview:{input:cfg.input,output:cfg.output,ai:cfg.ai,promptPreview:{system:cfg.prompt?.system ?? '', user:cfg.prompt?.user ?? ''},window:{resultPosition:cfg.window?.resultPosition ?? 'inherit'}} } };
-  }
-
-  async install(session: CurrentSessionSnapshot, slug: string) {
-    const p = await this.presets.findBySlug(slug); if (!p || p.disabledAt || p.visibility !== 'unlisted') throw new NotFoundException('Preset not found');
-    if ((await this.scenarios.countActiveByUserId(session.user.id)) >= 50) throw new ConflictException('Scenario limit reached');
-    const newScenarioId = `scn_${randomUUID()}`;
-    const now = new Date();
-    const nowIso = now.toISOString();
-    const normalized = this.scenarioService.normalizeScenarioConfig(p.configJson, { scenarioId: newScenarioId, now });
-    const installedConfig = { ...normalized, id: newScenarioId, enabled: true, showInSelectionMenu: normalized.showInSelectionMenu ?? true, createdAt: nowIso, updatedAt: nowIso };
-
-    const created = await this.presets.transaction(async (tx) => {
-      const scenarioCreated = await this.scenarios.create({ user: { connect: { id: session.user.id } }, scenarioId: installedConfig.id, schemaVersion: 1, name: installedConfig.name, description: installedConfig.description, buttonLabel: installedConfig.buttonLabel, icon: installedConfig.icon, enabled: installedConfig.enabled, showInSelectionMenu: installedConfig.showInSelectionMenu, menuOrder: installedConfig.menuOrder, configJson: installedConfig as any }, tx);
-      await this.presets.updateBySlug(slug, { installCount: { increment: 1 } }, tx);
-      return scenarioCreated;
-    });
-    return { scenario: created.configJson };
-  }
-
-  async disable(session: CurrentSessionSnapshot, slug: string) {
-    const p = await this.presets.findBySlug(slug); if (!p) throw new NotFoundException('Preset not found');
-    if (p.ownerUserId !== session.user.id) throw new ForbiddenException('Not allowed');
-    await this.presets.updateBySlug(slug, { visibility: 'disabled', disabledAt: new Date() });
-    return { ok: true };
-  }
+  constructor(@Inject(ExtensionScenarioPresetsRepository) private readonly presets: ExtensionScenarioPresetsRepository,@Inject(ExtensionScenariosRepository) private readonly scenarios: ExtensionScenariosRepository,@Inject(ExtensionScenariosService) private readonly scenarioService: ExtensionScenariosService) {}
+  private tags(v:any){ if(!v) return []; if(Array.isArray(v)) return v.map((x)=>String(x).trim()).filter(Boolean); return []; }
+  async createFromScenario(session: CurrentSessionSnapshot, scenarioId: string, raw?: any) { const scenario = await this.scenarios.findAnyByUserAndScenarioId(session.user.id, scenarioId); if (!scenario || scenario.deletedAt) throw new NotFoundException('Scenario not found'); const normalized = this.scenarioService.normalizeScenarioConfig(scenario.configJson, { existingConfig: scenario.configJson as any }); const visibility = ['private','unlisted','public'].includes(raw?.visibility) ? raw.visibility : 'unlisted'; const preset = await this.presets.create({ owner: { connect: { id: session.user.id } }, sourceScenarioId: scenarioId, slug: `p_${randomUUID()}`, name: raw?.name?.trim() || normalized.name, description: raw?.description?.trim() || normalized.description, buttonLabel: normalized.buttonLabel, icon: normalized.icon, schemaVersion: 1, presetVersion: 1, visibility, category: raw?.category?.trim() || null, tags: this.tags(raw?.tags), publishedAt: visibility === 'public' ? new Date() : null, configJson: normalized as any }); return { preset: { slug: preset.slug, name: preset.name, description: preset.description, buttonLabel: preset.buttonLabel, icon: preset.icon, visibility: preset.visibility, previewUrl: `/extension/presets/${preset.slug}` } }; }
+  async mine(session: CurrentSessionSnapshot) { return { items: (await this.presets.listMine(session.user.id)).map((p) => ({ slug:p.slug,name:p.name,description:p.description,buttonLabel:p.buttonLabel,icon:p.icon,visibility:p.visibility,category:p.category,tags:this.tags(p.tags),publishedAt:p.publishedAt,moderationStatus:p.moderationStatus,installCount:p.installCount,createdAt:p.createdAt,updatedAt:p.updatedAt,previewUrl:`/extension/presets/${p.slug}` })) }; }
+  async listCatalog(raw:any){ const limit=Math.min(Math.max(Number(raw?.limit)||24,1),50); const offset=Number(raw?.cursor)||0; const q=(raw?.q||'').trim(); const where:any={ visibility:'public', disabledAt:null, moderationStatus:'approved' }; if(raw?.category) where.category=String(raw.category); if(q) where.OR=[{name:{contains:q,mode:'insensitive'}},{description:{contains:q,mode:'insensitive'}},{buttonLabel:{contains:q,mode:'insensitive'}}]; const sort=raw?.sort==='newest'?[{publishedAt:'desc'}]:raw?.sort==='updated'?[{updatedAt:'desc'}]:[{installCount:'desc'},{publishedAt:'desc'}]; let rows=await this.presets.listCatalog(where,sort as any,offset,limit+1); if(raw?.tag) rows=rows.filter((r:any)=>this.tags(r.tags).includes(String(raw.tag))); const items=rows.slice(0,limit).map((p:any)=>({slug:p.slug,name:p.name,description:p.description,buttonLabel:p.buttonLabel,icon:p.icon,category:p.category,tags:this.tags(p.tags),installCount:p.installCount,createdAt:p.createdAt,updatedAt:p.updatedAt,publishedAt:p.publishedAt,previewUrl:`/extension/presets/${p.slug}`})); return { items, nextCursor: rows.length>limit ? String(offset+limit) : null }; }
+  async updateMetadata(session:CurrentSessionSnapshot,slug:string,raw:any){ const p=await this.presets.findBySlug(slug); if(!p) throw new NotFoundException('Preset not found'); if(p.ownerUserId!==session.user.id) throw new ForbiddenException('Not allowed'); if(p.visibility==='disabled'||p.disabledAt) throw new BadRequestException('Disabled preset cannot be updated'); const visibility = raw?.visibility && ['private','unlisted','public'].includes(raw.visibility) ? raw.visibility : p.visibility; return { preset: await this.presets.updateBySlug(slug,{ name: raw?.name?.trim() || undefined, description: raw?.description?.trim() ?? undefined, visibility, category: raw?.category?.trim() ?? null, tags: raw?.tags ? this.tags(raw.tags) : undefined, sourceLanguage: raw?.sourceLanguage?.trim() ?? undefined, targetLanguage: raw?.targetLanguage?.trim() ?? undefined, publishedAt: visibility==='public' && !p.publishedAt ? new Date() : undefined })}; }
+  async preview(slug: string, session?: CurrentSessionSnapshot | null) { const p = await this.presets.findBySlug(slug); if (!p || p.disabledAt || p.visibility === 'disabled') throw new NotFoundException('Preset not found'); if (p.visibility === 'private' && session?.user.id !== p.ownerUserId) throw new NotFoundException('Preset not found'); const cfg = p.configJson as any; return { preset: { slug:p.slug,name:p.name,description:p.description,buttonLabel:p.buttonLabel,icon:p.icon,schemaVersion:p.schemaVersion,presetVersion:p.presetVersion,visibility:p.visibility,category:p.category,tags:this.tags(p.tags),publishedAt:p.publishedAt,installCount:p.installCount,createdAt:p.createdAt,updatedAt:p.updatedAt,scenarioPreview:{input:cfg.input,output:cfg.output,ai:cfg.ai,promptPreview:{system:cfg.prompt?.system ?? '', user:cfg.prompt?.user ?? ''},window:{resultPosition:cfg.window?.resultPosition ?? 'inherit'}} } }; }
+  async install(session: CurrentSessionSnapshot, slug: string) { const p = await this.presets.findBySlug(slug); if (!p || p.disabledAt || (p.visibility !== 'unlisted' && p.visibility !== 'public')) throw new NotFoundException('Preset not found'); if ((await this.scenarios.countActiveByUserId(session.user.id)) >= 50) throw new ConflictException('Scenario limit reached'); const newScenarioId = `scn_${randomUUID()}`; const now = new Date(); const nowIso = now.toISOString(); const normalized = this.scenarioService.normalizeScenarioConfig(p.configJson, { scenarioId: newScenarioId, now }); const installedConfig = { ...normalized, id: newScenarioId, enabled: true, showInSelectionMenu: normalized.showInSelectionMenu ?? true, createdAt: nowIso, updatedAt: nowIso }; const created = await this.presets.transaction(async (tx) => { const scenarioCreated = await this.scenarios.create({ user: { connect: { id: session.user.id } }, scenarioId: installedConfig.id, schemaVersion: 1, name: installedConfig.name, description: installedConfig.description, buttonLabel: installedConfig.buttonLabel, icon: installedConfig.icon, enabled: installedConfig.enabled, showInSelectionMenu: installedConfig.showInSelectionMenu, menuOrder: installedConfig.menuOrder, configJson: installedConfig as any }, tx); await this.presets.updateBySlug(slug, { installCount: { increment: 1 } }, tx); return scenarioCreated; }); return { scenario: created.configJson }; }
+  async disable(session: CurrentSessionSnapshot, slug: string) { const p = await this.presets.findBySlug(slug); if (!p) throw new NotFoundException('Preset not found'); if (p.ownerUserId !== session.user.id) throw new ForbiddenException('Not allowed'); await this.presets.updateBySlug(slug, { visibility: 'disabled', disabledAt: new Date() }); return { ok: true }; }
 }
