@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { Prisma } from '@quizmind/database';
 import type { CurrentSessionSnapshot } from '../auth/auth.types';
@@ -41,7 +41,7 @@ function assertNoDangerousKeys(value: unknown): void {
 export class ExtensionScenariosService {
   private readonly logger = new Logger(ExtensionScenariosService.name);
 
-  constructor(private readonly repo: ExtensionScenariosRepository) {}
+  constructor(@Inject(ExtensionScenariosRepository) private readonly repo: ExtensionScenariosRepository) {}
 
   private async withRepositoryErrorContext<T>(operation: string, userId: string, run: () => Promise<T>): Promise<T> {
     try {

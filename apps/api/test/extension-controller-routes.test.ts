@@ -1,9 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { UnauthorizedException } from '@nestjs/common';
-import { PATH_METADATA } from '@nestjs/common/constants';
+import { PATH_METADATA, SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/constants';
 import { ExtensionScenariosController } from '../src/extension/extension-scenarios.controller';
 import { ExtensionScenarioPresetsController } from '../src/extension/extension-scenario-presets.controller';
+import { AuthService } from '../src/auth/auth.service';
+import { ExtensionScenariosService } from '../src/extension/extension-scenarios.service';
+import { ExtensionScenarioPresetsService } from '../src/extension/extension-scenario-presets.service';
 
 function routePath(target: object, methodName: string) {
   return Reflect.getMetadata(PATH_METADATA, (target as any)[methodName]);
@@ -45,4 +48,37 @@ test('GET /extension/scenarios/sync with auth returns sync payload from service'
 
   const res = await controller.sync('Bearer valid-token');
   assert.deepEqual(res, payload);
+});
+
+test('DI metadata: ExtensionScenariosController explicitly injects AuthService and ExtensionScenariosService', () => {
+  const deps = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, ExtensionScenariosController) as Array<{ index: number; param: unknown }>;
+  assert.ok(Array.isArray(deps));
+  assert.equal(deps.length, 2);
+  assert.equal(deps.find((d) => d.index === 0)?.param, AuthService);
+  assert.equal(deps.find((d) => d.index === 1)?.param, ExtensionScenariosService);
+});
+
+test('DI metadata: ExtensionScenarioPresetsController explicitly injects AuthService and ExtensionScenarioPresetsService', () => {
+  const deps = Reflect.getMetadata(SELF_DECLARED_DEPS_METADATA, ExtensionScenarioPresetsController) as Array<{ index: number; param: unknown }>;
+  assert.ok(Array.isArray(deps));
+  assert.equal(deps.length, 2);
+  assert.equal(deps.find((d) => d.index === 0)?.param, AuthService);
+  assert.equal(deps.find((d) => d.index === 1)?.param, ExtensionScenarioPresetsService);
+});
+
+test('controller methods with wired service throw UnauthorizedException for missing auth and preview remains callable', async () => {
+  const scenarioController = new ExtensionScenariosController(
+    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
+    { list: async () => ({ items: [] }), sync: async () => ({ items: [], deleted: [] }) } as any,
+  );
+  await assert.rejects(() => scenarioController.list(undefined), UnauthorizedException);
+  await assert.rejects(() => scenarioController.sync(undefined), UnauthorizedException);
+
+  const presetsController = new ExtensionScenarioPresetsController(
+    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
+    { mine: async () => ({ items: [] }), install: async () => ({ ok: true }), preview: async () => ({ preset: { slug: 's1' } }) } as any,
+  );
+  await assert.rejects(() => presetsController.mine(undefined), UnauthorizedException);
+  await assert.rejects(() => presetsController.install('s1', undefined), UnauthorizedException);
+  assert.deepEqual(await presetsController.preview('s1', undefined), { preset: { slug: 's1' } });
 });

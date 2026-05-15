@@ -1,11 +1,14 @@
-import { Body, Controller, Delete, Get, Headers, Param, Patch, Post, Put, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Headers, Inject, Param, Patch, Post, Put, UnauthorizedException } from '@nestjs/common';
 import { parseBearerToken } from '@quizmind/auth';
 import { AuthService } from '../auth/auth.service';
 import { ExtensionScenariosService } from './extension-scenarios.service';
 
 @Controller('extension/scenarios')
 export class ExtensionScenariosController {
-  constructor(private readonly authService: AuthService, private readonly service: ExtensionScenariosService) {}
+  constructor(
+    @Inject(AuthService) private readonly authService: AuthService,
+    @Inject(ExtensionScenariosService) private readonly service: ExtensionScenariosService,
+  ) {}
 
   @Get()
   async list(@Headers('authorization') authorization?: string) { return this.service.list(await this.requireSession(authorization)); }
