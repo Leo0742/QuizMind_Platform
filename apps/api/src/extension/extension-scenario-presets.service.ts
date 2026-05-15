@@ -56,6 +56,7 @@ export class ExtensionScenarioPresetsService {
   }
 
   private mapPresetSummary(p: any) {
+    const capability = this.getScenarioCapabilitySummary(p.configJson);
     return {
       slug: p.slug,
       name: p.name,
@@ -71,11 +72,13 @@ export class ExtensionScenarioPresetsService {
       createdAt: p.createdAt,
       updatedAt: p.updatedAt,
       previewUrl: `/extension/presets/${p.slug}`,
+      capability,
     };
   }
 
 
   private mapCatalogPresetCard(p: any) {
+    const capability = this.getScenarioCapabilitySummary(p.configJson);
     return {
       slug: p.slug,
       name: p.name,
@@ -89,7 +92,15 @@ export class ExtensionScenarioPresetsService {
       updatedAt: p.updatedAt,
       publishedAt: p.publishedAt,
       previewUrl: `/extension/presets/${p.slug}`,
+      capability,
     };
+  }
+
+  private getScenarioCapabilitySummary(config: any) {
+    if (config?.input?.type === 'selection_text' && config?.output?.type === 'text') {
+      return { capabilityKey: 'selection_text_to_text', inputLabel: 'Выделенный текст', outputLabel: 'Текст' };
+    }
+    return { capabilityKey: 'unknown', inputLabel: '—', outputLabel: '—' };
   }
 
   async createFromScenario(session: CurrentSessionSnapshot, scenarioId: string, raw?: any) {
@@ -187,6 +198,7 @@ export class ExtensionScenarioPresetsService {
         schemaVersion: p.schemaVersion, presetVersion: p.presetVersion, visibility: p.visibility,
         category: p.category, tags: this.normalizeTags(p.tags), publishedAt: p.publishedAt,
         installCount: p.installCount, createdAt: p.createdAt, updatedAt: p.updatedAt,
+        capability: this.getScenarioCapabilitySummary(cfg),
         scenarioPreview: {
           input: cfg.input, output: cfg.output, ai: cfg.ai,
           promptPreview: { system: cfg.prompt?.system ?? '', user: cfg.prompt?.user ?? '' },

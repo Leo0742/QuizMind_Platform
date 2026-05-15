@@ -6,6 +6,7 @@ import { ExtensionScenariosRepository, type UserExtensionScenarioRecord } from '
 
 const MAX_SCENARIOS = 50;
 const DANGEROUS_KEYS = new Set(['code', 'js', 'script', 'eval', 'functionBody', 'remoteScriptUrl']);
+const COMING_SOON_CAPABILITY_MESSAGE = 'Only selected text → text scenarios are currently supported. Image, screenshot, file and multi-output scenarios are coming soon.';
 
 type Plain = Record<string, unknown>;
 interface ScenarioConfig {
@@ -67,8 +68,14 @@ export class ExtensionScenariosService {
 
     const input = asObj(root.input ?? { type: 'selection_text' }, 'input');
     const output = asObj(root.output ?? { type: 'text', renderer: 'answer_window' }, 'output');
-    if (input.type !== 'selection_text') throw new BadRequestException('input.type must be selection_text');
-    if (output.type !== 'text') throw new BadRequestException('output.type must be text');
+    if (input.type !== 'selection_text') {
+      if (['screenshot', 'selection_text_plus_screenshot', 'uploaded_file'].includes(String(input.type))) throw new BadRequestException(COMING_SOON_CAPABILITY_MESSAGE);
+      throw new BadRequestException('input.type must be selection_text');
+    }
+    if (output.type !== 'text') {
+      if (['image', 'multi'].includes(String(output.type))) throw new BadRequestException(COMING_SOON_CAPABILITY_MESSAGE);
+      throw new BadRequestException('output.type must be text');
+    }
     if (output.renderer !== 'answer_window') throw new BadRequestException('output.renderer must be answer_window');
 
     const ai = asObj(root.ai ?? {}, 'ai');

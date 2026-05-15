@@ -14,6 +14,7 @@ interface CatalogItem {
   tags: string[];
   installCount: number;
   previewUrl: string;
+  capability?: { capabilityKey: string; inputLabel: string; outputLabel: string };
 }
 
 interface CatalogResponse { items: CatalogItem[]; nextCursor: string | null }
@@ -66,6 +67,6 @@ export default function PresetsCatalogPage() {
     {loading ? <p>Загрузка...</p> : null}
     {error ? <p>{error}</p> : null}
     {!loading && !error && items.length === 0 ? <p>Пока нет публичных сценариев.</p> : null}
-    {items.map((p) => <article key={p.slug} className='panel'><h3>{p.icon ? `${p.icon} ` : ''}{p.name}</h3><p>{p.description ?? '—'}</p><p>Категория: {p.category ?? '—'} · Теги: {p.tags.join(', ') || '—'} · Установок: {p.installCount ?? 0}</p><Link href={p.previewUrl}>Открыть preset</Link></article>)}
+    {items.map((p) => <article key={p.slug} className='panel'><h3>{p.icon ? `${p.icon} ` : ''}{p.name}</h3><p>{p.description ?? '—'}</p><p><strong>{p.capability?.inputLabel ?? 'Выделенный текст'} → {p.capability?.outputLabel ?? 'Текст'}</strong></p><p>Категория: {p.category ?? '—'} · Теги: {p.tags.join(', ') || '—'} · Установок: {p.installCount ?? 0}</p><Link href={p.previewUrl}>Открыть preset</Link></article>)}
   </main>;
 }
