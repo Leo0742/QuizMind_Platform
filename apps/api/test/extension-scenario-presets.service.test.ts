@@ -50,15 +50,18 @@ test('catalog lists only public approved non-disabled and hides configJson', asy
   const out2 = await svc.listCatalog({});
   assert.equal(out2.items.length, 1);
   assert.equal((out2.items[0] as any).configJson, undefined);
+  assert.equal((out2.items[0] as any).ownerUserId, undefined);
+  assert.equal((out2.items[0] as any).visibility, undefined);
 });
 
 test('owner patch to public sets publishedAt; non-owner blocked; disabled blocked', async () => {
   const { svc, presets } = setup();
   const created = await svc.createFromScenario(sessionA, 'scn_source', { visibility: 'unlisted' });
-  const patched = await svc.updateMetadata(sessionA, created.preset.slug, { visibility: 'public', category: 'coding', tags: [' JS ', 'js', 'tooling'] });
+  const patched = await svc.updateMetadata(sessionA, created.preset.slug, { visibility: 'public', category: 'invalid-cat', tags: [' JS ', 'js', 'tooling', 'tooling', 'a'.repeat(33), 't1','t2','t3','t4','t5','t6','t7','t8','t9','t10','t11'] });
   assert.equal(patched.preset.visibility, 'public');
   assert.ok(patched.preset.publishedAt instanceof Date);
-  assert.deepEqual(patched.preset.tags, ['js', 'tooling']);
+  assert.equal(patched.preset.category, null);
+  assert.deepEqual(patched.preset.tags, ['js', 'tooling', 't1', 't2', 't3', 't4', 't5', 't6', 't7', 't8']);
   await assert.rejects(() => svc.updateMetadata(sessionB, created.preset.slug, { visibility: 'private' }), ForbiddenException);
   presets[0].disabledAt = new Date();
   presets[0].visibility = 'disabled';
@@ -95,4 +98,10 @@ test('non-owner cannot disable', async () => {
   const { svc } = setup();
   const created = await svc.createFromScenario(sessionA, 'scn_source');
   await assert.rejects(() => svc.disable(sessionB, created.preset.slug), ForbiddenException);
+});
+
+
+test('catalog tag filter currently rejected', async () => {
+  const { svc } = setup();
+  await assert.rejects(() => svc.listCatalog({ tag: 'study' }), BadRequestException);
 });

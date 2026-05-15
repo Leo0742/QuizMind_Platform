@@ -74,6 +74,24 @@ export class ExtensionScenarioPresetsService {
     };
   }
 
+
+  private mapCatalogPresetCard(p: any) {
+    return {
+      slug: p.slug,
+      name: p.name,
+      description: p.description,
+      buttonLabel: p.buttonLabel,
+      icon: p.icon,
+      category: p.category,
+      tags: this.normalizeTags(p.tags),
+      installCount: p.installCount,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      publishedAt: p.publishedAt,
+      previewUrl: `/extension/presets/${p.slug}`,
+    };
+  }
+
   async createFromScenario(session: CurrentSessionSnapshot, scenarioId: string, raw?: any) {
     const scenario = await this.scenarios.findAnyByUserAndScenarioId(session.user.id, scenarioId);
     if (!scenario || scenario.deletedAt) throw new NotFoundException('Scenario not found');
@@ -113,6 +131,7 @@ export class ExtensionScenarioPresetsService {
     const q = this.normalizeText(raw?.q, 120) ?? '';
     const category = this.normalizeCategory(raw?.category);
     const tag = this.normalizeTags([raw?.tag])[0] ?? null;
+    if (tag) throw new BadRequestException('Tag filtering is not supported yet.');
 
     const where: any = { visibility: 'public', disabledAt: null, moderationStatus: 'approved' };
     if (category) where.category = category;
@@ -126,18 +145,10 @@ export class ExtensionScenarioPresetsService {
 
     const orderBy = raw?.sort === 'newest' ? [{ publishedAt: 'desc' }] : raw?.sort === 'updated' ? [{ updatedAt: 'desc' }] : [{ installCount: 'desc' }, { publishedAt: 'desc' }];
 
-    let rows = await this.presets.listCatalog(where, orderBy as any, offset, limit + 1);
-    if (tag) {
-      rows = rows.filter((row) => this.normalizeTags(row.tags).includes(tag));
-      // v1: no pagination when filtering by tag to avoid cursor gaps with post-filtering.
-      return {
-        items: rows.slice(0, limit).map((p) => ({ ...this.mapPresetSummary(p), visibility: undefined })),
-        nextCursor: null,
-      };
-    }
+    const rows = await this.presets.listCatalog(where, orderBy as any, offset, limit + 1);
 
     return {
-      items: rows.slice(0, limit).map((p) => ({ ...this.mapPresetSummary(p), visibility: undefined })),
+      items: rows.slice(0, limit).map((p) => this.mapCatalogPresetCard(p)),
       nextCursor: rows.length > limit ? String(offset + limit) : null,
     };
   }

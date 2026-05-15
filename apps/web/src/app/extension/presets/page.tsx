@@ -44,13 +44,15 @@ export default function PresetsCatalogPage() {
   }, [q, category, sort]);
 
   useEffect(() => {
+    const controller = new AbortController();
     void (async () => {
       setLoading(true); setError(null);
       try {
-        const payload = await readResponse<CatalogResponse>(await fetch(`/bff/extension/scenario-presets/catalog?${query}`, { cache: 'no-store' }));
-        setItems(payload.items ?? []);
-      } catch (e) { setError((e as Error).message); } finally { setLoading(false); }
+        const payload = await readResponse<CatalogResponse>(await fetch(`/bff/extension/scenario-presets/catalog?${query}`, { cache: 'no-store', signal: controller.signal }));
+        if (!controller.signal.aborted) setItems(payload.items ?? []);
+      } catch (e) { if (!controller.signal.aborted) setError((e as Error).message); } finally { if (!controller.signal.aborted) setLoading(false); }
     })();
+    return () => controller.abort();
   }, [query]);
 
   return <main className='container'>
