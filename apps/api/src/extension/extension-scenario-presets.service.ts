@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { CurrentSessionSnapshot } from '../auth/auth.types';
 import { ExtensionScenarioPresetsRepository } from './extension-scenario-presets.repository';
@@ -7,7 +7,11 @@ import { ExtensionScenariosService } from './extension-scenarios.service';
 
 @Injectable()
 export class ExtensionScenarioPresetsService {
-  constructor(private readonly presets: ExtensionScenarioPresetsRepository, private readonly scenarios: ExtensionScenariosRepository, private readonly scenarioService: ExtensionScenariosService) {}
+  constructor(
+    @Inject(ExtensionScenarioPresetsRepository) private readonly presets: ExtensionScenarioPresetsRepository,
+    @Inject(ExtensionScenariosRepository) private readonly scenarios: ExtensionScenariosRepository,
+    @Inject(ExtensionScenariosService) private readonly scenarioService: ExtensionScenariosService,
+  ) {}
 
   async createFromScenario(session: CurrentSessionSnapshot, scenarioId: string, raw?: { visibility?: string; name?: string; description?: string }) {
     const scenario = await this.scenarios.findAnyByUserAndScenarioId(session.user.id, scenarioId);
