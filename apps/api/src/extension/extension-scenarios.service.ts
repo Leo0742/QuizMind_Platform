@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type { Prisma } from '@quizmind/database';
 import type { CurrentSessionSnapshot } from '../auth/auth.types';
@@ -39,7 +39,24 @@ function assertNoDangerousKeys(value: unknown): void {
 
 @Injectable()
 export class ExtensionScenariosService {
+  private readonly logger = new Logger(ExtensionScenariosService.name);
+
   constructor(private readonly repo: ExtensionScenariosRepository) {}
+
+  private async withRepositoryErrorContext<T>(operation: string, userId: string, run: () => Promise<T>): Promise<T> {
+    try {
+      return await run();
+    } catch (error) {
+      const prismaCode = typeof error === 'object' && error && 'code' in error ? String((error as { code?: unknown }).code ?? '') : '';
+      if (prismaCode === 'P2021') {
+        this.logger.error(`Extension scenarios table missing. Run database migrations. operation=${operation} userId=${userId} prismaCode=${prismaCode}`);
+        throw new InternalServerErrorException('Extension scenarios storage is not ready. Please run database migrations.');
+      }
+
+      this.logger.error(`Extension scenarios operation failed. operation=${operation} userId=${userId} prismaCode=${prismaCode || 'n/a'}`, (error as Error)?.stack);
+      throw error;
+    }
+  }
 
   normalizeScenarioConfig(raw: unknown, options?: { scenarioId?: string; existingConfig?: Plain | null; now?: Date }): ScenarioConfig {
     assertNoDangerousKeys(raw);
@@ -103,8 +120,8 @@ export class ExtensionScenariosService {
   private toUpdateData(s: ScenarioConfig): Prisma.UserExtensionScenarioUpdateInput { return { schemaVersion: 1, name: s.name, description: s.description, buttonLabel: s.buttonLabel, icon: s.icon, enabled: s.enabled, showInSelectionMenu: s.showInSelectionMenu, menuOrder: s.menuOrder, configJson: s as unknown as Prisma.InputJsonValue, deletedAt: null }; }
   private toCreateData(userId: string, s: ScenarioConfig): Prisma.UserExtensionScenarioCreateInput { return { user: { connect: { id: userId } }, scenarioId: s.id, schemaVersion: 1, name: s.name, description: s.description, buttonLabel: s.buttonLabel, icon: s.icon, enabled: s.enabled, showInSelectionMenu: s.showInSelectionMenu, menuOrder: s.menuOrder, configJson: s as unknown as Prisma.InputJsonValue }; }
 
-  async list(session: CurrentSessionSnapshot) { return { schemaVersion: 1, items: (await this.repo.listActiveByUserId(session.user.id)).map((r) => r.configJson), serverTime: new Date().toISOString() }; }
-  async sync(session: CurrentSessionSnapshot) { const r = await this.list(session); return { ...r, deleted: [] as string[] }; }
+  async list(session: CurrentSessionSnapshot) { return this.withRepositoryErrorContext('list', session.user.id, async () => ({ schemaVersion: 1, items: (await this.repo.listActiveByUserId(session.user.id)).map((r) => r.configJson), serverTime: new Date().toISOString() })); }
+  async sync(session: CurrentSessionSnapshot) { return this.withRepositoryErrorContext('sync', session.user.id, async () => { const r = await this.list(session); return { ...r, deleted: [] as string[] }; }); }
 
   async create(session: CurrentSessionSnapshot, rawScenario: unknown) {
     const userId = session.user.id;

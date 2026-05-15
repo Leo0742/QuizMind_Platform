@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { UnauthorizedException } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { ExtensionScenariosController } from '../src/extension/extension-scenarios.controller';
 import { ExtensionScenarioPresetsController } from '../src/extension/extension-scenario-presets.controller';
@@ -30,4 +31,18 @@ test('extension scenario presets controller is mounted without api prefix', () =
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'preview'), ':slug');
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'install'), ':slug/install');
   assert.equal(routePath(ExtensionScenarioPresetsController.prototype, 'del'), ':slug');
+});
+
+test('GET /extension/scenarios/sync without auth throws 401', async () => {
+  const controller = new ExtensionScenariosController({ getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any, { sync: async () => ({}) } as any);
+  await assert.rejects(() => controller.sync(undefined), UnauthorizedException);
+});
+
+test('GET /extension/scenarios/sync with auth returns sync payload from service', async () => {
+  const session = { user: { id: 'u1', email: 'u@q.test' } };
+  const payload = { schemaVersion: 1, items: [], deleted: [], serverTime: '2026-05-15T00:00:00.000Z' };
+  const controller = new ExtensionScenariosController({ getCurrentSession: async () => session } as any, { sync: async (s: unknown) => { assert.equal(s, session); return payload; } } as any);
+
+  const res = await controller.sync('Bearer valid-token');
+  assert.deepEqual(res, payload);
 });

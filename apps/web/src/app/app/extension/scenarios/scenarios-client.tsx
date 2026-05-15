@@ -20,7 +20,7 @@ interface ScenarioConfig {
   updatedAt?: string;
 }
 
-type BffEnvelope<T> = { ok?: boolean; data?: T; error?: { message?: string }; message?: string };
+type BffEnvelope<T> = { ok?: boolean; data?: T; error?: { message?: string } | string; message?: string | string[] };
 interface PresetLink {
   slug: string;
   name: string;
@@ -44,7 +44,11 @@ function formatDate(value?: string): string {
 
 async function readBffResponse<T>(res: Response): Promise<T> {
   const payload = (await res.json().catch(() => null)) as BffEnvelope<T> | null;
-  if (!res.ok || payload?.ok === false) throw new Error(payload?.error?.message ?? payload?.message ?? `HTTP ${res.status}`);
+  if (!res.ok || payload?.ok === false) {
+    const errorMessage = typeof payload?.error === 'string' ? payload.error : payload?.error?.message;
+    const message = Array.isArray(payload?.message) ? payload?.message.join('; ') : payload?.message;
+    throw new Error(errorMessage ?? message ?? `HTTP ${res.status}`);
+  }
   return (payload?.data ?? payload) as T;
 }
 
