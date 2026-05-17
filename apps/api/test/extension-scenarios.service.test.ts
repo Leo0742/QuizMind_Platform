@@ -111,12 +111,14 @@ test('O cross-user isolation', async () => {
 
 test('P rejects coming-soon scenario capabilities with clear message', async () => {
   const svc = new ExtensionScenariosService(repoMock());
+  const imageScenario = await svc.create(sessionA, { ...baseScenario, output: { type: 'image', renderer: 'image_window' } });
+  assert.equal((imageScenario.scenario as any).output.type, 'image');
   await assert.rejects(
     () => svc.create(sessionA, { ...baseScenario, output: { type: 'image', renderer: 'answer_window' } }),
-    (error: any) => error?.message?.includes('Only selected text → text scenarios are currently supported. Image, screenshot, file and multi-output scenarios are coming soon.'),
+    (error: any) => error?.message?.includes('output.renderer must be image_window for image output'),
   );
   await assert.rejects(
     () => svc.create(sessionA, { ...baseScenario, input: { type: 'screenshot' } }),
-    (error: any) => error?.message?.includes('Only selected text → text scenarios are currently supported. Image, screenshot, file and multi-output scenarios are coming soon.'),
+    (error: any) => error?.message?.includes('Only selected text → text and selected text → image scenarios are currently supported. Screenshot, file and multi-output scenarios are coming soon.'),
   );
 });

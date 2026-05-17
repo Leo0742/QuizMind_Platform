@@ -100,6 +100,9 @@ export class ExtensionScenarioPresetsService {
     if (config?.input?.type === 'selection_text' && config?.output?.type === 'text') {
       return { capabilityKey: 'selection_text_to_text', inputLabel: 'Выделенный текст', outputLabel: 'Текст' };
     }
+    if (config?.input?.type === 'selection_text' && config?.output?.type === 'image') {
+      return { capabilityKey: 'selection_text_to_image', inputLabel: 'Выделенный текст', outputLabel: 'Изображение' };
+    }
     return { capabilityKey: 'unknown', inputLabel: '—', outputLabel: '—' };
   }
 

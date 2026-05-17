@@ -4,6 +4,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { PATH_METADATA, SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/constants';
 import { ExtensionScenariosController } from '../src/extension/extension-scenarios.controller';
 import { ExtensionScenarioPresetsController } from '../src/extension/extension-scenario-presets.controller';
+import { ExtensionControlController } from '../src/extension/extension-control.controller';
 import { AuthService } from '../src/auth/auth.service';
 import { ExtensionControlService } from '../src/extension/extension-control.service';
 import { ExtensionScenariosService } from '../src/extension/extension-scenarios.service';
@@ -119,4 +120,13 @@ test('presets mine and install support installation token fallback and preview s
   assert.equal(mineSession.user.id, 'ext-user-2');
   assert.equal(installSession.principal.userId, 'ext-user-2');
   assert.equal(previewSession, null);
+});
+
+test('POST /extension/ai/image without auth throws 401', async () => {
+  const controller = new ExtensionControlController(
+    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
+    { resolveInstallationSession: async () => ({}) } as any,
+    { listModelsForCurrentSession: async () => ({ models: [] }) } as any,
+  );
+  await assert.rejects(() => controller.imageV2({}, undefined), UnauthorizedException);
 });

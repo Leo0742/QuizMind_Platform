@@ -120,6 +120,17 @@ interface ExtensionAiRuntimeRequest {
   maxTokens?: number;
 }
 
+interface ExtensionAiImageRuntimeRequest {
+  operation?: string;
+  requestType?: string;
+  scenarioId?: string;
+  scenarioName?: string;
+  model?: string | null;
+  prompt?: string;
+  messages?: unknown;
+  options?: { size?: string; quality?: string };
+}
+
 interface ExtensionInstallationSelfDisconnectRequest {
   installationId?: string;
 }
@@ -420,6 +431,26 @@ export class ExtensionControlController {
     @Headers('authorization') authorization?: string,
   ) {
     return ok(await this.proxyExtensionAiRuntime(request, authorization, '/extension/ai/multicheck'));
+  }
+
+  @Post('extension/ai/image')
+  async imageV2(
+    @Body() request?: ExtensionAiImageRuntimeRequest,
+    @Headers('authorization') authorization?: string,
+  ) {
+    const installationSession = await this.requireInstallationSession(authorization, '/extension/ai/image');
+    const session = buildInstallationRuntimeSession(installationSession);
+    const requestedModel = typeof request?.model === 'string' && request.model.trim() ? request.model.trim() : null;
+
+    if (requestedModel) {
+      const catalog = await this.aiProxyService.listModelsForCurrentSession(session);
+      const modelInfo = catalog.models.find((entry) => entry.modelId === requestedModel);
+      if (modelInfo && !modelInfo.capabilityTags.includes('image') && !modelInfo.capabilityTags.includes('vision')) {
+        throw new BadRequestException('Selected model does not support image output.');
+      }
+    }
+
+    throw new ServiceUnavailableException('Image generation runtime is not enabled in the current provider pipeline yet.');
   }
 
   @Get('extension/ai/models')
