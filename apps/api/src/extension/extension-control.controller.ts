@@ -438,6 +438,9 @@ export class ExtensionControlController {
     @Body() request?: ExtensionAiImageRuntimeRequest,
     @Headers('authorization') authorization?: string,
   ) {
+    if (!this.env.enableExtensionImageGeneration) {
+      throw new ServiceUnavailableException('Image generation is not enabled yet.');
+    }
     const installationSession = await this.requireInstallationSession(authorization, '/extension/ai/image');
     const session = buildInstallationRuntimeSession(installationSession);
     const result = await this.aiProxyService.generateImageForCurrentSession(session, {

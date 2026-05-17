@@ -92,6 +92,7 @@ export interface ApiEnv extends PlatformEnv {
   polzaApiUrl: string;
   polzaApiKey?: string;
   polzaTimeoutMs: number;
+  enableExtensionImageGeneration: boolean;
   rateLimitWindowMs: number;
   rateLimitMaxRequests: number;
   authRateLimitWindowMs: number;
@@ -267,6 +268,7 @@ export function loadApiEnv(source: EnvSource = process.env): ApiEnv {
     polzaApiUrl: source.POLZA_API_URL ?? 'https://api.polza.ai/v1',
     polzaApiKey: source.POLZA_API_KEY,
     polzaTimeoutMs: readNumberEnv(source, 'POLZA_TIMEOUT_MS', 45000),
+    enableExtensionImageGeneration: source.ENABLE_EXTENSION_IMAGE_GENERATION === 'true',
     rateLimitWindowMs: readNumberEnv(source, 'RATE_LIMIT_WINDOW_MS', 60_000),
     rateLimitMaxRequests: readNumberEnv(source, 'RATE_LIMIT_MAX_REQUESTS', 120),
     authRateLimitWindowMs: readNumberEnv(source, 'AUTH_RATE_LIMIT_WINDOW_MS', 900_000),
