@@ -565,7 +565,10 @@ export class AiProxyService {
     const isImageOutputModel = (entry: ProviderModelCatalogEntry | undefined) =>
       Boolean(entry && (entry.capabilityTags.includes('image_output') || entry.capabilityTags.includes('image-generation') || /(^|\/)(gpt-image|dall-e|flux|stable-diffusion|imagen)/i.test(entry.modelId)));
 
-    if (!isImageOutputModel(selectedModel)) throw new BadRequestException('Selected model does not support image output.');
+    if (!isImageOutputModel(selectedModel)) {
+      if (!request.model) throw new BadRequestException('No image-capable model is configured.');
+      throw new BadRequestException('Selected model does not support image output.');
+    }
     if (invocation.provider !== 'openrouter') throw new BadRequestException('Image generation is currently supported only for OpenRouter models.');
 
     const prompt = invocation.request.messages.map((m) => typeof m.content === 'string' ? m.content : m.content.map((x) => x.type === 'text' ? x.text : '').join('\n')).join('\n\n').trim();
