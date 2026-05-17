@@ -130,3 +130,21 @@ test('POST /extension/ai/image without auth throws 401', async () => {
   );
   await assert.rejects(() => controller.imageV2({}, undefined), UnauthorizedException);
 });
+
+test('POST /extension/ai/image delegates to provider-backed image service and returns normalized payload', async () => {
+  const controller = new ExtensionControlController(
+    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
+    { resolveInstallationSession: async () => ({ installation: { userId: 'ext-user-9' } }) } as any,
+    {
+      generateImageForCurrentSession: async () => ({
+        image: { url: 'https://img.test/x.png', mimeType: 'image/png', filename: 'quizmind-image-a.png' },
+        model: 'openai/gpt-image-1',
+        provider: 'openrouter',
+        quota: { consumed: 1, periodStart: '2026-05-17T00:00:00.000Z', periodEnd: '2026-05-18T00:00:00.000Z' },
+      }),
+    } as any,
+  );
+  const res = await controller.imageV2({ model: 'openai/gpt-image-1', messages: [{ role: 'user', content: 'draw cat' }] }, 'Bearer installation-token');
+  assert.equal(res.ok, true);
+  assert.equal((res.data as any).image.url, 'https://img.test/x.png');
+});

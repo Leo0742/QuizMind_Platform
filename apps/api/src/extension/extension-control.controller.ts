@@ -440,17 +440,12 @@ export class ExtensionControlController {
   ) {
     const installationSession = await this.requireInstallationSession(authorization, '/extension/ai/image');
     const session = buildInstallationRuntimeSession(installationSession);
-    const requestedModel = typeof request?.model === 'string' && request.model.trim() ? request.model.trim() : null;
-
-    if (requestedModel) {
-      const catalog = await this.aiProxyService.listModelsForCurrentSession(session);
-      const modelInfo = catalog.models.find((entry) => entry.modelId === requestedModel);
-      if (modelInfo && !modelInfo.capabilityTags.includes('image') && !modelInfo.capabilityTags.includes('vision')) {
-        throw new BadRequestException('Selected model does not support image output.');
-      }
-    }
-
-    throw new ServiceUnavailableException('Image generation runtime is not enabled in the current provider pipeline yet.');
+    const result = await this.aiProxyService.generateImageForCurrentSession(session, {
+      model: typeof request?.model === 'string' ? request.model : null,
+      messages: request?.messages,
+      options: request?.options,
+    });
+    return ok(result);
   }
 
   @Get('extension/ai/models')
