@@ -120,6 +120,17 @@ interface ExtensionAiRuntimeRequest {
   maxTokens?: number;
 }
 
+interface ExtensionAiImageRuntimeRequest {
+  operation?: string;
+  requestType?: string;
+  scenarioId?: string;
+  scenarioName?: string;
+  model?: string | null;
+  prompt?: string;
+  messages?: unknown;
+  options?: { size?: string; quality?: string };
+}
+
 interface ExtensionInstallationSelfDisconnectRequest {
   installationId?: string;
 }
@@ -420,6 +431,24 @@ export class ExtensionControlController {
     @Headers('authorization') authorization?: string,
   ) {
     return ok(await this.proxyExtensionAiRuntime(request, authorization, '/extension/ai/multicheck'));
+  }
+
+  @Post('extension/ai/image')
+  async imageV2(
+    @Body() request?: ExtensionAiImageRuntimeRequest,
+    @Headers('authorization') authorization?: string,
+  ) {
+    if (!this.env.enableExtensionImageGeneration) {
+      throw new ServiceUnavailableException('Image generation is not enabled yet.');
+    }
+    const installationSession = await this.requireInstallationSession(authorization, '/extension/ai/image');
+    const session = buildInstallationRuntimeSession(installationSession);
+    const result = await this.aiProxyService.generateImageForCurrentSession(session, {
+      model: typeof request?.model === 'string' ? request.model : null,
+      messages: request?.messages,
+      options: request?.options,
+    });
+    return ok(result);
   }
 
   @Get('extension/ai/models')

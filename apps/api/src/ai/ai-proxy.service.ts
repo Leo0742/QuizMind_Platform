@@ -96,6 +96,20 @@ interface PreparedProxyInvocation {
   quotaCounter: AiProxyQuotaCounterRecord;
 }
 
+interface AiImageGenerationResult {
+  image: { url?: string; base64?: string; mimeType: string; filename: string };
+  model: string;
+  provider: AiProvider;
+  usage?: unknown;
+  quota: AiProxyQuotaSnapshot;
+}
+
+interface NormalizedGeneratedImagePayload {
+  url?: string;
+  base64?: string;
+  mimeType: string;
+}
+
 interface OpenRouterStreamInvocationResult {
   stream: ReadableStream<Uint8Array>;
   contentType: string;
@@ -381,6 +395,95 @@ function modelSupportsVision(model: AiModelsCatalogPayload['models'][number]): b
   return model.capabilityTags.some((tag) => tag === 'vision');
 }
 
+function readStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string').map((item) => item.toLowerCase());
+}
+
+function isImageOutputModel(entry: ProviderModelCatalogEntry | undefined): boolean {
+  if (!entry) return false;
+  const tags = (entry.capabilityTags ?? []).map((tag) => tag.toLowerCase());
+  if (tags.includes('image_output') || tags.includes('image-generation')) return true;
+
+  const record = entry as unknown as Record<string, unknown>;
+  const architecture = record.architecture && typeof record.architecture === 'object' && !Array.isArray(record.architecture)
+    ? (record.architecture as Record<string, unknown>)
+    : undefined;
+
+  const outputCandidates = [
+    ...readStringArray(record.outputModalities),
+    ...readStringArray(record.output_modalities),
+    ...readStringArray(record.supported_output_modalities),
+    ...readStringArray(architecture?.output_modalities),
+    ...readStringArray(architecture?.output),
+  ];
+
+  if (outputCandidates.includes('image') || outputCandidates.includes('images')) return true;
+
+  return /(^|\/)(gpt-[\w.-]*image[\w.-]*|gpt-image-[\w.-]+|dall-e|flux|stable-diffusion|imagen)/i.test(entry.modelId);
+}
+
+function normalizeImageGenerationResponse(payload: unknown): NormalizedGeneratedImagePayload {
+  const data = payload && typeof payload === 'object' && !Array.isArray(payload) && Array.isArray((payload as any).data) ? (payload as any).data[0] : null;
+  const url = typeof data?.url === 'string' ? data.url : undefined;
+  let base64 = typeof data?.b64_json === 'string' ? data.b64_json : undefined;
+  let mimeType = 'image/png';
+  if (!base64 && typeof data?.image_url === 'string' && data.image_url.startsWith('data:')) {
+    const m = data.image_url.match(/^data:([^;]+);base64,(.+)$/);
+    if (m) { mimeType = m[1]; base64 = m[2]; }
+  }
+  if (!url && !base64) throw new BadGatewayException('Image provider did not return an image.');
+  return { ...(url ? { url } : {}), ...(base64 ? { base64 } : {}), mimeType };
+}
+
+function normalizeRouterAiImageGenerationResponse(payload: unknown): NormalizedGeneratedImagePayload {
+  const extractFromString = (value: string): NormalizedGeneratedImagePayload | null => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const dataUrlMatch = trimmed.match(/^data:([^;]+);base64,([a-z0-9+/=\s]+)$/i);
+    if (dataUrlMatch) return { base64: dataUrlMatch[2].replace(/\s+/g, ''), mimeType: dataUrlMatch[1].toLowerCase() };
+    if (/^https?:\/\//i.test(trimmed)) return { url: trimmed, mimeType: 'image/png' };
+    const markdownImageMatch = trimmed.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/i);
+    if (markdownImageMatch) return { url: markdownImageMatch[1], mimeType: 'image/png' };
+    const firstUrlMatch = trimmed.match(/https?:\/\/[^\s)]+/i);
+    if (firstUrlMatch) return { url: firstUrlMatch[0], mimeType: 'image/png' };
+    if (/^[a-z0-9+/=\s]+$/i.test(trimmed) && trimmed.replace(/\s+/g, '').length >= 32) {
+      return { base64: trimmed.replace(/\s+/g, ''), mimeType: 'image/png' };
+    }
+    return null;
+  };
+
+  const messageContent = payload
+    && typeof payload === 'object'
+    && !Array.isArray(payload)
+    && Array.isArray((payload as any).choices)
+    && (payload as any).choices[0]?.message
+    ? (payload as any).choices[0].message.content
+    : undefined;
+
+  if (typeof messageContent === 'string') {
+    const parsed = extractFromString(messageContent);
+    if (parsed) return parsed;
+  }
+
+  if (Array.isArray(messageContent)) {
+    for (const block of messageContent) {
+      if (!block || typeof block !== 'object' || Array.isArray(block)) continue;
+      const blockType = typeof (block as any).type === 'string' ? (block as any).type : '';
+      if (blockType === 'image_url' && typeof (block as any).image_url?.url === 'string') {
+        const parsed = extractFromString((block as any).image_url.url);
+        if (parsed) return parsed;
+      }
+      if (blockType === 'text' && typeof (block as any).text === 'string') {
+        const parsed = extractFromString((block as any).text);
+        if (parsed) return parsed;
+      }
+    }
+  }
+
+  throw new BadGatewayException('Image provider did not return an image.');
+}
+
 function createRequestAbortSignal(input: {
   timeoutMs: number;
   abortController?: AbortController;
@@ -543,6 +646,118 @@ export class AiProxyService {
 
       throw error;
     }
+  }
+
+  async generateImageForCurrentSession(
+    session: CurrentSessionSnapshot,
+    request: { model?: string | null; messages?: unknown; options?: { size?: string; quality?: string } },
+  ): Promise<AiImageGenerationResult> {
+    if (!Array.isArray(request.messages) || request.messages.length === 0) {
+      throw new BadRequestException('messages is required.');
+    }
+    const invocation = await this.prepareProxyInvocation(session, { model: request.model ?? undefined, messages: request.messages, stream: false });
+    const selectedModel = (await this.listModelsForCurrentSession(session)).models.find((m) => m.modelId === invocation.resolvedModel);
+
+    if (!isImageOutputModel(selectedModel)) {
+      console.warn(JSON.stringify({
+        eventType: 'ai_proxy.image_model_rejected',
+        occurredAt: new Date().toISOString(),
+        userId: session.user.id,
+        modelId: selectedModel?.modelId ?? invocation.resolvedModel,
+        capabilityTags: selectedModel?.capabilityTags ?? [],
+        outputModalities: (selectedModel as any)?.outputModalities ?? null,
+        output_modalities: (selectedModel as any)?.output_modalities ?? null,
+        architectureOutput: (selectedModel as any)?.architecture?.output ?? null,
+        architectureOutputModalities: (selectedModel as any)?.architecture?.output_modalities ?? null,
+      }));
+      if (!request.model) throw new BadRequestException('No image-capable model is configured.');
+      throw new BadRequestException('Selected model does not support image output.');
+    }
+    const prompt = invocation.request.messages.map((m) => typeof m.content === 'string' ? m.content : m.content.map((x) => x.type === 'text' ? x.text : '').join('\n')).join('\n\n').trim();
+    if (!prompt) throw new BadRequestException('messages or prompt text is required.');
+    const payload = await this.invokeImageGeneration({
+      provider: invocation.provider,
+      apiKey: invocation.apiKey,
+      model: invocation.resolvedModel,
+      prompt,
+      size: request.options?.size,
+      quality: request.options?.quality,
+    });
+    const image = invocation.provider === 'routerai'
+      ? normalizeRouterAiImageGenerationResponse(payload)
+      : normalizeImageGenerationResponse(payload);
+    const quota = await this.recordProxyCompletion({ invocation, usage: undefined });
+    return { image: { ...image, filename: `quizmind-image-${new Date().toISOString().replace(/[:.]/g, '-')}.png` }, model: invocation.resolvedModel, provider: invocation.provider, quota };
+  }
+
+  private async invokeImageGeneration(input: {
+    provider: AiProvider;
+    apiKey: string;
+    model: string;
+    prompt: string;
+    size?: string;
+    quality?: string;
+  }): Promise<unknown> {
+    if (input.provider !== 'openrouter' && input.provider !== 'routerai') {
+      throw new BadRequestException(`Image generation is not supported for provider "${input.provider}" yet.`);
+    }
+    const isOpenRouter = input.provider === 'openrouter';
+    if (!isOpenRouter) {
+      return this.invokeRouterAiImageGeneration(input);
+    }
+    const endpoint = `${trimTrailingSlash(this.env.openRouterApiUrl)}/images/generations`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${input.apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': this.env.appUrl,
+        'X-Title': this.env.openRouterAppName,
+      },
+      body: JSON.stringify({ model: input.model, prompt: input.prompt, ...(input.size ? { size: input.size } : {}), ...(input.quality ? { quality: input.quality } : {}) }),
+      signal: createRequestAbortSignal({ timeoutMs: this.env.openRouterTimeoutMs }),
+    });
+    const payload = this.tryParseJson(await response.text());
+    if (!response.ok) {
+      throw new BadGatewayException(`OpenRouter image request failed with status ${response.status}.`);
+    }
+    return payload;
+  }
+
+  private async invokeRouterAiImageGeneration(input: {
+    provider: AiProvider;
+    apiKey: string;
+    model: string;
+    prompt: string;
+  }): Promise<unknown> {
+    const endpoint = `${trimTrailingSlash(this.env.routerAiApiUrl)}/chat/completions`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${input.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: input.model,
+        messages: [{ role: 'user', content: input.prompt }],
+        stream: false,
+      }),
+      signal: createRequestAbortSignal({ timeoutMs: this.env.routerAiTimeoutMs }),
+    });
+    const bodyText = await response.text();
+    const payload = this.tryParseJson(bodyText);
+    if (!response.ok) {
+      const message = this.extractProviderErrorMessage(payload, bodyText) ?? 'Unknown provider error';
+      console.warn(JSON.stringify({
+        eventType: 'ai_proxy.image_provider_call_failed',
+        provider: input.provider,
+        model: input.model,
+        status: response.status,
+        responseHasBody: bodyText.trim().length > 0,
+      }));
+      throw new BadGatewayException(`RouterAI image request failed with status ${response.status}: ${message}`);
+    }
+    return payload;
   }
 
   async listModelsForCurrentSession(
@@ -2216,6 +2431,18 @@ export class AiProxyService {
       periodEnd: input.invocation.quotaCounter.periodEnd.toISOString(),
       decremented: input.invocation.keySource === 'platform',
     };
+  }
+
+  private extractProviderErrorMessage(payload: unknown, fallbackText: string): string | null {
+    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+      const error = (payload as any).error;
+      if (typeof error === 'string' && error.trim()) return error.trim();
+      if (error && typeof error === 'object' && typeof error.message === 'string' && error.message.trim()) return error.message.trim();
+      if (typeof (payload as any).message === 'string' && (payload as any).message.trim()) return (payload as any).message.trim();
+    }
+    const trimmed = fallbackText.trim();
+    if (!trimmed) return null;
+    return trimmed.slice(0, 300);
   }
 
   private tryParseJson(value: string): unknown {

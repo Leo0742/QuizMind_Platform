@@ -70,11 +70,28 @@ test('owner patch to public sets publishedAt; non-owner blocked; disabled blocke
 
 test('public preview works and public install works', async () => {
   const { svc, presets } = setup();
+  presets.length = 0;
   const created = await svc.createFromScenario(sessionA, 'scn_source', { visibility: 'public' });
   const preview = await svc.preview(created.preset.slug, null);
   assert.equal(preview.preset.slug, created.preset.slug);
   await svc.install(sessionB, created.preset.slug);
   assert.equal(presets[0].installCount, 1);
+});
+
+test('preview/catalog expose image capability for image scenarios', async () => {
+  const { svc, presets } = setup();
+  presets.length = 0;
+  (svc as any).scenarioService.normalizeScenarioConfig = (raw: any) => ({
+    ...sourceScenario,
+    ...raw,
+    output: { type: 'image', renderer: 'image_window', image: { downloadable: true, openInNewTab: true } },
+  });
+  const created = await svc.createFromScenario(sessionA, 'scn_source', { visibility: 'public' });
+  const preview = await svc.preview(created.preset.slug, null);
+  assert.equal(preview.preset.capability.outputLabel, 'Изображение');
+  const catalog = await svc.listCatalog({});
+  assert.equal(catalog.items[0].capability.outputLabel, 'Изображение');
+  assert.equal((catalog.items[0] as any).configJson, undefined);
 });
 
 test('catalog q and category filters work', async () => {
