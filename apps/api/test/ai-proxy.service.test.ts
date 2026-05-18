@@ -1307,13 +1307,15 @@ test('AiProxyService.generateImageForCurrentSession normalizes url/base64/data-u
   );
 });
 
-test('AiProxyService.generateImageForCurrentSession supports RouterAI endpoint and normalization', async (t) => {
+test('AiProxyService.generateImageForCurrentSession RouterAI uses /chat/completions with expected body and normalizes URL', async (t) => {
   const { service } = createService(undefined, { defaultModel: 'openai/gpt-5.4-image-2' });
   let observedUrl = '';
+  let observedBody: any;
   const previousFetch = globalThis.fetch;
-  globalThis.fetch = (async (url) => {
+  globalThis.fetch = (async (url, init) => {
     observedUrl = String(url);
-    return new Response(JSON.stringify({ data: [{ b64_json: 'YWJj' }] }), { status: 200 });
+    observedBody = init && typeof init === 'object' ? JSON.parse(String((init as any).body ?? '{}')) : undefined;
+    return new Response(JSON.stringify({ choices: [{ message: { content: 'https://example.com/image.png' } }] }), { status: 200 });
   }) as typeof fetch;
   t.after(() => { globalThis.fetch = previousFetch; });
   (service as any).prepareProxyInvocation = async () => ({
@@ -1334,8 +1336,56 @@ test('AiProxyService.generateImageForCurrentSession supports RouterAI endpoint a
     defaultModel: 'openai/gpt-5.4-image-2',
   });
   const result = await service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] });
-  assert.match(observedUrl, /routerai\.ru\/api\/v1\/images\/generations/);
-  assert.equal(result.image.base64, 'YWJj');
+  assert.match(observedUrl, /routerai\.ru\/api\/v1\/chat\/completions$/);
+  assert.deepEqual(observedBody, {
+    model: 'openai/gpt-5.4-image-2',
+    messages: [{ role: 'user', content: 'draw' }],
+    stream: false,
+  });
+  assert.equal(result.image.url, 'https://example.com/image.png');
+});
+
+test('AiProxyService.generateImageForCurrentSession RouterAI normalizes data URL and markdown URL', async (t) => {
+  const { service } = createService(undefined, { defaultModel: 'openai/gpt-5.4-image-2' });
+  const previousFetch = globalThis.fetch;
+  const queue = [
+    new Response(JSON.stringify({ choices: [{ message: { content: 'data:image/png;base64,QUFB' } }] }), { status: 200 }),
+    new Response(JSON.stringify({ choices: [{ message: { content: '![image](https://example.com/image2.png)' } }] }), { status: 200 }),
+  ];
+  globalThis.fetch = (async () => queue.shift() as Response) as typeof fetch;
+  t.after(() => { globalThis.fetch = previousFetch; });
+  (service as any).prepareProxyInvocation = async () => ({
+    session: createSession(), request: { messages: [{ role: 'user', content: 'draw' }] }, resolvedModel: 'openai/gpt-5.4-image-2', provider: 'routerai',
+    keySource: 'platform', apiKey: 'routerai-key', requestId: 'req', occurredAt: new Date(), quotaCounter: { consumed: 0, periodStart: new Date(), periodEnd: new Date() },
+  });
+  (service as any).listModelsForCurrentSession = async () => ({
+    providers: [], models: [{ provider: 'routerai', modelId: 'openai/gpt-5.4-image-2', displayName: 'Image', capabilityTags: ['text'], availability: 'available', outputModalities: ['images'] }],
+    defaultProvider: 'routerai', defaultModel: 'openai/gpt-5.4-image-2',
+  });
+  const a = await service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] });
+  assert.equal(a.image.base64, 'QUFB');
+  assert.equal(a.image.mimeType, 'image/png');
+  const b = await service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] });
+  assert.equal(b.image.url, 'https://example.com/image2.png');
+});
+
+test('AiProxyService.generateImageForCurrentSession RouterAI non-ok returns safe 502', async (t) => {
+  const { service } = createService(undefined, { defaultModel: 'openai/gpt-5.4-image-2' });
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = (async () => new Response(JSON.stringify({ error: { message: 'rate limited' } }), { status: 429 })) as typeof fetch;
+  t.after(() => { globalThis.fetch = previousFetch; });
+  (service as any).prepareProxyInvocation = async () => ({
+    session: createSession(), request: { messages: [{ role: 'user', content: 'draw' }] }, resolvedModel: 'openai/gpt-5.4-image-2', provider: 'routerai',
+    keySource: 'platform', apiKey: 'routerai-key', requestId: 'req', occurredAt: new Date(), quotaCounter: { consumed: 0, periodStart: new Date(), periodEnd: new Date() },
+  });
+  (service as any).listModelsForCurrentSession = async () => ({
+    providers: [], models: [{ provider: 'routerai', modelId: 'openai/gpt-5.4-image-2', displayName: 'Image', capabilityTags: ['text'], availability: 'available', outputModalities: ['images'] }],
+    defaultProvider: 'routerai', defaultModel: 'openai/gpt-5.4-image-2',
+  });
+  await assert.rejects(
+    () => service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] }),
+    /RouterAI image request failed with status 429: rate limited/i,
+  );
 });
 
 test('AiProxyService.generateImageForCurrentSession returns provider-specific unsupported message', async () => {

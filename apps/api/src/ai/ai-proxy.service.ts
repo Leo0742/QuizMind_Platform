@@ -436,6 +436,54 @@ function normalizeImageGenerationResponse(payload: unknown): NormalizedGenerated
   return { ...(url ? { url } : {}), ...(base64 ? { base64 } : {}), mimeType };
 }
 
+function normalizeRouterAiImageGenerationResponse(payload: unknown): NormalizedGeneratedImagePayload {
+  const extractFromString = (value: string): NormalizedGeneratedImagePayload | null => {
+    const trimmed = value.trim();
+    if (!trimmed) return null;
+    const dataUrlMatch = trimmed.match(/^data:([^;]+);base64,([a-z0-9+/=\s]+)$/i);
+    if (dataUrlMatch) return { base64: dataUrlMatch[2].replace(/\s+/g, ''), mimeType: dataUrlMatch[1].toLowerCase() };
+    if (/^https?:\/\//i.test(trimmed)) return { url: trimmed, mimeType: 'image/png' };
+    const markdownImageMatch = trimmed.match(/!\[[^\]]*\]\((https?:\/\/[^\s)]+)\)/i);
+    if (markdownImageMatch) return { url: markdownImageMatch[1], mimeType: 'image/png' };
+    const firstUrlMatch = trimmed.match(/https?:\/\/[^\s)]+/i);
+    if (firstUrlMatch) return { url: firstUrlMatch[0], mimeType: 'image/png' };
+    if (/^[a-z0-9+/=\s]+$/i.test(trimmed) && trimmed.replace(/\s+/g, '').length >= 32) {
+      return { base64: trimmed.replace(/\s+/g, ''), mimeType: 'image/png' };
+    }
+    return null;
+  };
+
+  const messageContent = payload
+    && typeof payload === 'object'
+    && !Array.isArray(payload)
+    && Array.isArray((payload as any).choices)
+    && (payload as any).choices[0]?.message
+    ? (payload as any).choices[0].message.content
+    : undefined;
+
+  if (typeof messageContent === 'string') {
+    const parsed = extractFromString(messageContent);
+    if (parsed) return parsed;
+  }
+
+  if (Array.isArray(messageContent)) {
+    for (const block of messageContent) {
+      if (!block || typeof block !== 'object' || Array.isArray(block)) continue;
+      const blockType = typeof (block as any).type === 'string' ? (block as any).type : '';
+      if (blockType === 'image_url' && typeof (block as any).image_url?.url === 'string') {
+        const parsed = extractFromString((block as any).image_url.url);
+        if (parsed) return parsed;
+      }
+      if (blockType === 'text' && typeof (block as any).text === 'string') {
+        const parsed = extractFromString((block as any).text);
+        if (parsed) return parsed;
+      }
+    }
+  }
+
+  throw new BadGatewayException('Image provider did not return an image.');
+}
+
 function createRequestAbortSignal(input: {
   timeoutMs: number;
   abortController?: AbortController;
@@ -635,7 +683,9 @@ export class AiProxyService {
       size: request.options?.size,
       quality: request.options?.quality,
     });
-    const image = normalizeImageGenerationResponse(payload);
+    const image = invocation.provider === 'routerai'
+      ? normalizeRouterAiImageGenerationResponse(payload)
+      : normalizeImageGenerationResponse(payload);
     const quota = await this.recordProxyCompletion({ invocation, usage: undefined });
     return { image: { ...image, filename: `quizmind-image-${new Date().toISOString().replace(/[:.]/g, '-')}.png` }, model: invocation.resolvedModel, provider: invocation.provider, quota };
   }
@@ -652,20 +702,60 @@ export class AiProxyService {
       throw new BadRequestException(`Image generation is not supported for provider "${input.provider}" yet.`);
     }
     const isOpenRouter = input.provider === 'openrouter';
-    const endpoint = `${trimTrailingSlash(isOpenRouter ? this.env.openRouterApiUrl : this.env.routerAiApiUrl)}/images/generations`;
+    if (!isOpenRouter) {
+      return this.invokeRouterAiImageGeneration(input);
+    }
+    const endpoint = `${trimTrailingSlash(this.env.openRouterApiUrl)}/images/generations`;
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${input.apiKey}`,
         'Content-Type': 'application/json',
-        ...(isOpenRouter ? { 'HTTP-Referer': this.env.appUrl, 'X-Title': this.env.openRouterAppName } : {}),
+        'HTTP-Referer': this.env.appUrl,
+        'X-Title': this.env.openRouterAppName,
       },
       body: JSON.stringify({ model: input.model, prompt: input.prompt, ...(input.size ? { size: input.size } : {}), ...(input.quality ? { quality: input.quality } : {}) }),
-      signal: createRequestAbortSignal({ timeoutMs: isOpenRouter ? this.env.openRouterTimeoutMs : this.env.routerAiTimeoutMs }),
+      signal: createRequestAbortSignal({ timeoutMs: this.env.openRouterTimeoutMs }),
     });
     const payload = this.tryParseJson(await response.text());
     if (!response.ok) {
-      throw new BadGatewayException(`${isOpenRouter ? 'OpenRouter' : 'RouterAI'} image request failed with status ${response.status}.`);
+      throw new BadGatewayException(`OpenRouter image request failed with status ${response.status}.`);
+    }
+    return payload;
+  }
+
+  private async invokeRouterAiImageGeneration(input: {
+    provider: AiProvider;
+    apiKey: string;
+    model: string;
+    prompt: string;
+  }): Promise<unknown> {
+    const endpoint = `${trimTrailingSlash(this.env.routerAiApiUrl)}/chat/completions`;
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${input.apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: input.model,
+        messages: [{ role: 'user', content: input.prompt }],
+        stream: false,
+      }),
+      signal: createRequestAbortSignal({ timeoutMs: this.env.routerAiTimeoutMs }),
+    });
+    const bodyText = await response.text();
+    const payload = this.tryParseJson(bodyText);
+    if (!response.ok) {
+      const message = this.extractProviderErrorMessage(payload, bodyText) ?? 'Unknown provider error';
+      console.warn(JSON.stringify({
+        eventType: 'ai_proxy.image_provider_call_failed',
+        provider: input.provider,
+        model: input.model,
+        status: response.status,
+        responseHasBody: bodyText.trim().length > 0,
+      }));
+      throw new BadGatewayException(`RouterAI image request failed with status ${response.status}: ${message}`);
     }
     return payload;
   }
@@ -2341,6 +2431,18 @@ export class AiProxyService {
       periodEnd: input.invocation.quotaCounter.periodEnd.toISOString(),
       decremented: input.invocation.keySource === 'platform',
     };
+  }
+
+  private extractProviderErrorMessage(payload: unknown, fallbackText: string): string | null {
+    if (payload && typeof payload === 'object' && !Array.isArray(payload)) {
+      const error = (payload as any).error;
+      if (typeof error === 'string' && error.trim()) return error.trim();
+      if (error && typeof error === 'object' && typeof error.message === 'string' && error.message.trim()) return error.message.trim();
+      if (typeof (payload as any).message === 'string' && (payload as any).message.trim()) return (payload as any).message.trim();
+    }
+    const trimmed = fallbackText.trim();
+    if (!trimmed) return null;
+    return trimmed.slice(0, 300);
   }
 
   private tryParseJson(value: string): unknown {
