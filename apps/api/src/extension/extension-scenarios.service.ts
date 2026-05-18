@@ -6,12 +6,16 @@ import { ExtensionScenariosRepository, type UserExtensionScenarioRecord } from '
 
 const MAX_SCENARIOS = 50;
 const DANGEROUS_KEYS = new Set(['code', 'js', 'script', 'eval', 'functionBody', 'remoteScriptUrl']);
+const COMING_SOON_CAPABILITY_MESSAGE = 'Only selected text → text and selected text → image scenarios are currently supported. Screenshot, file and multi-output scenarios are coming soon.';
 
 type Plain = Record<string, unknown>;
 interface ScenarioConfig {
   id: string; schemaVersion: 1; name: string; description: string | null; buttonLabel: string; icon: string | null;
   enabled: boolean; showInSelectionMenu: boolean; menuOrder: number;
-  input: { type: 'selection_text' }; output: { type: 'text'; renderer: 'answer_window' };
+  input: { type: 'selection_text' };
+  output:
+    | { type: 'text'; renderer: 'answer_window' }
+    | { type: 'image'; renderer: 'image_window'; image: { downloadable: boolean; openInNewTab: boolean } };
   ai: { provider: 'auto'; model: string | null; temperature: number; maxTokens: number };
   prompt: { system: string; user: string };
   window: { resultPosition: 'inherit'|'under_action'|'floating'; theme: 'inherit'; draggable?: boolean; resizable?: boolean };
@@ -67,9 +71,16 @@ export class ExtensionScenariosService {
 
     const input = asObj(root.input ?? { type: 'selection_text' }, 'input');
     const output = asObj(root.output ?? { type: 'text', renderer: 'answer_window' }, 'output');
-    if (input.type !== 'selection_text') throw new BadRequestException('input.type must be selection_text');
-    if (output.type !== 'text') throw new BadRequestException('output.type must be text');
-    if (output.renderer !== 'answer_window') throw new BadRequestException('output.renderer must be answer_window');
+    if (input.type !== 'selection_text') {
+      if (['screenshot', 'selection_text_plus_screenshot', 'uploaded_file'].includes(String(input.type))) throw new BadRequestException(COMING_SOON_CAPABILITY_MESSAGE);
+      throw new BadRequestException('input.type must be selection_text');
+    }
+    if (!['text', 'image'].includes(String(output.type))) {
+      if (['multi'].includes(String(output.type))) throw new BadRequestException(COMING_SOON_CAPABILITY_MESSAGE);
+      throw new BadRequestException('output.type must be text or image');
+    }
+    if (output.type === 'text' && output.renderer !== 'answer_window') throw new BadRequestException('output.renderer must be answer_window for text output');
+    if (output.type === 'image' && output.renderer !== 'image_window') throw new BadRequestException('output.renderer must be image_window for image output');
 
     const ai = asObj(root.ai ?? {}, 'ai');
     const prompt = asObj(root.prompt ?? {}, 'prompt');
@@ -95,7 +106,16 @@ export class ExtensionScenariosService {
       showInSelectionMenu: typeof root.showInSelectionMenu === 'boolean' ? root.showInSelectionMenu : true,
       menuOrder,
       input: { type: 'selection_text' },
-      output: { type: 'text', renderer: 'answer_window' },
+      output: output.type === 'image'
+        ? {
+            type: 'image',
+            renderer: 'image_window',
+            image: {
+              downloadable: isObj(output.image) && typeof output.image.downloadable === 'boolean' ? output.image.downloadable : true,
+              openInNewTab: isObj(output.image) && typeof output.image.openInNewTab === 'boolean' ? output.image.openInNewTab : true,
+            },
+          }
+        : { type: 'text', renderer: 'answer_window' },
       ai: {
         provider: 'auto',
         model: cleanString(ai.model, 'ai.model', 150, false),
