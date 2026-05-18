@@ -389,6 +389,34 @@ function modelSupportsVision(model: AiModelsCatalogPayload['models'][number]): b
   return model.capabilityTags.some((tag) => tag === 'vision');
 }
 
+function readStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((item): item is string => typeof item === 'string').map((item) => item.toLowerCase());
+}
+
+function isImageOutputModel(entry: ProviderModelCatalogEntry | undefined): boolean {
+  if (!entry) return false;
+  const tags = (entry.capabilityTags ?? []).map((tag) => tag.toLowerCase());
+  if (tags.includes('image_output') || tags.includes('image-generation')) return true;
+
+  const record = entry as unknown as Record<string, unknown>;
+  const architecture = record.architecture && typeof record.architecture === 'object' && !Array.isArray(record.architecture)
+    ? (record.architecture as Record<string, unknown>)
+    : undefined;
+
+  const outputCandidates = [
+    ...readStringArray(record.outputModalities),
+    ...readStringArray(record.output_modalities),
+    ...readStringArray(record.supported_output_modalities),
+    ...readStringArray(architecture?.output_modalities),
+    ...readStringArray(architecture?.output),
+  ];
+
+  if (outputCandidates.includes('image') || outputCandidates.includes('images')) return true;
+
+  return /(^|\/)(gpt-[\w.-]*image[\w.-]*|gpt-image-[\w.-]+|dall-e|flux|stable-diffusion|imagen)/i.test(entry.modelId);
+}
+
 function createRequestAbortSignal(input: {
   timeoutMs: number;
   abortController?: AbortController;
@@ -562,10 +590,19 @@ export class AiProxyService {
     }
     const invocation = await this.prepareProxyInvocation(session, { model: request.model ?? undefined, messages: request.messages, stream: false });
     const selectedModel = (await this.listModelsForCurrentSession(session)).models.find((m) => m.modelId === invocation.resolvedModel);
-    const isImageOutputModel = (entry: ProviderModelCatalogEntry | undefined) =>
-      Boolean(entry && (entry.capabilityTags.includes('image_output') || entry.capabilityTags.includes('image-generation') || /(^|\/)(gpt-image|dall-e|flux|stable-diffusion|imagen)/i.test(entry.modelId)));
 
     if (!isImageOutputModel(selectedModel)) {
+      console.warn(JSON.stringify({
+        eventType: 'ai_proxy.image_model_rejected',
+        occurredAt: new Date().toISOString(),
+        userId: session.user.id,
+        modelId: selectedModel?.modelId ?? invocation.resolvedModel,
+        capabilityTags: selectedModel?.capabilityTags ?? [],
+        outputModalities: (selectedModel as any)?.outputModalities ?? null,
+        output_modalities: (selectedModel as any)?.output_modalities ?? null,
+        architectureOutput: (selectedModel as any)?.architecture?.output ?? null,
+        architectureOutputModalities: (selectedModel as any)?.architecture?.output_modalities ?? null,
+      }));
       if (!request.model) throw new BadRequestException('No image-capable model is configured.');
       throw new BadRequestException('Selected model does not support image output.');
     }
