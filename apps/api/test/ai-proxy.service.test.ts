@@ -1307,6 +1307,62 @@ test('AiProxyService.generateImageForCurrentSession normalizes url/base64/data-u
   );
 });
 
+test('AiProxyService.generateImageForCurrentSession supports RouterAI endpoint and normalization', async (t) => {
+  const { service } = createService(undefined, { defaultModel: 'openai/gpt-5.4-image-2' });
+  let observedUrl = '';
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = (async (url) => {
+    observedUrl = String(url);
+    return new Response(JSON.stringify({ data: [{ b64_json: 'YWJj' }] }), { status: 200 });
+  }) as typeof fetch;
+  t.after(() => { globalThis.fetch = previousFetch; });
+  (service as any).prepareProxyInvocation = async () => ({
+    session: createSession(),
+    request: { messages: [{ role: 'user', content: 'draw' }] },
+    resolvedModel: 'openai/gpt-5.4-image-2',
+    provider: 'routerai',
+    keySource: 'platform',
+    apiKey: 'routerai-key',
+    requestId: 'req',
+    occurredAt: new Date(),
+    quotaCounter: { consumed: 0, periodStart: new Date(), periodEnd: new Date() },
+  });
+  (service as any).listModelsForCurrentSession = async () => ({
+    providers: [],
+    models: [{ provider: 'routerai', modelId: 'openai/gpt-5.4-image-2', displayName: 'Image', capabilityTags: ['text'], availability: 'available', outputModalities: ['images'] }],
+    defaultProvider: 'routerai',
+    defaultModel: 'openai/gpt-5.4-image-2',
+  });
+  const result = await service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] });
+  assert.match(observedUrl, /routerai\.ru\/api\/v1\/images\/generations/);
+  assert.equal(result.image.base64, 'YWJj');
+});
+
+test('AiProxyService.generateImageForCurrentSession returns provider-specific unsupported message', async () => {
+  const { service } = createService(undefined, { defaultModel: 'openai/gpt-5.4-image-2' });
+  (service as any).prepareProxyInvocation = async () => ({
+    session: createSession(),
+    request: { messages: [{ role: 'user', content: 'draw' }] },
+    resolvedModel: 'openai/gpt-5.4-image-2',
+    provider: 'openai',
+    keySource: 'platform',
+    apiKey: 'k',
+    requestId: 'req',
+    occurredAt: new Date(),
+    quotaCounter: { consumed: 0, periodStart: new Date(), periodEnd: new Date() },
+  });
+  (service as any).listModelsForCurrentSession = async () => ({
+    providers: [],
+    models: [{ provider: 'openai', modelId: 'openai/gpt-5.4-image-2', displayName: 'Image', capabilityTags: ['image_output'], availability: 'available' }],
+    defaultProvider: 'openai',
+    defaultModel: 'openai/gpt-5.4-image-2',
+  });
+  await assert.rejects(
+    () => service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] }),
+    /Image generation is not supported for provider "openai" yet/i,
+  );
+});
+
 test('AiProxyService.generateImageForCurrentSession accepts OpenRouter image metadata variants including gpt-5.4-image-2', async (t) => {
   const { service } = createService(undefined, { defaultModel: 'openrouter/auto' });
   const previousFetch = globalThis.fetch;
