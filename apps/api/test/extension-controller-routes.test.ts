@@ -4,6 +4,7 @@ import { UnauthorizedException } from '@nestjs/common';
 import { PATH_METADATA, SELF_DECLARED_DEPS_METADATA } from '@nestjs/common/constants';
 import { ExtensionScenariosController } from '../src/extension/extension-scenarios.controller';
 import { ExtensionScenarioPresetsController } from '../src/extension/extension-scenario-presets.controller';
+import { ExtensionControlController } from '../src/extension/extension-control.controller';
 import { AuthService } from '../src/auth/auth.service';
 import { ExtensionControlService } from '../src/extension/extension-control.service';
 import { ExtensionScenariosService } from '../src/extension/extension-scenarios.service';
@@ -119,4 +120,49 @@ test('presets mine and install support installation token fallback and preview s
   assert.equal(mineSession.user.id, 'ext-user-2');
   assert.equal(installSession.principal.userId, 'ext-user-2');
   assert.equal(previewSession, null);
+});
+
+test('POST /extension/ai/image without auth throws 401', async () => {
+  const controller = new ExtensionControlController(
+    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
+    { resolveInstallationSession: async () => ({}) } as any,
+    { listModelsForCurrentSession: async () => ({ models: [] }) } as any,
+  );
+  (controller as any).env.enableExtensionImageGeneration = true;
+  await assert.rejects(() => controller.imageV2({}, undefined), UnauthorizedException);
+});
+
+test('POST /extension/ai/image defaults to disabled and returns 503 without provider call', async () => {
+  let called = false;
+  const controller = new ExtensionControlController(
+    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
+    { resolveInstallationSession: async () => ({ installation: { userId: 'ext-user-9' } }) } as any,
+    {
+      generateImageForCurrentSession: async () => { called = true; return {}; },
+    } as any,
+  );
+  await assert.rejects(
+    () => controller.imageV2({ model: 'openai/gpt-image-1', messages: [{ role: 'user', content: 'draw cat' }] }, 'Bearer installation-token'),
+    /Image generation is not enabled yet/i,
+  );
+  assert.equal(called, false);
+});
+
+test('POST /extension/ai/image delegates to provider-backed image service and returns normalized payload', async () => {
+  const controller = new ExtensionControlController(
+    { getCurrentSession: async () => ({ user: { id: 'u1' } }) } as any,
+    { resolveInstallationSession: async () => ({ installation: { userId: 'ext-user-9' } }) } as any,
+    {
+      generateImageForCurrentSession: async () => ({
+        image: { url: 'https://img.test/x.png', mimeType: 'image/png', filename: 'quizmind-image-a.png' },
+        model: 'openai/gpt-image-1',
+        provider: 'openrouter',
+        quota: { consumed: 1, periodStart: '2026-05-17T00:00:00.000Z', periodEnd: '2026-05-18T00:00:00.000Z' },
+      }),
+    } as any,
+  );
+  (controller as any).env.enableExtensionImageGeneration = true;
+  const res = await controller.imageV2({ model: 'openai/gpt-image-1', messages: [{ role: 'user', content: 'draw cat' }] }, 'Bearer installation-token');
+  assert.equal(res.ok, true);
+  assert.equal((res.data as any).image.url, 'https://img.test/x.png');
 });

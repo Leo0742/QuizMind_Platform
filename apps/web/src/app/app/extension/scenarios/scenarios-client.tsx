@@ -12,7 +12,9 @@ interface ScenarioConfig {
   showInSelectionMenu: boolean;
   menuOrder: number;
   input: { type: 'selection_text' };
-  output: { type: 'text'; renderer: 'answer_window' };
+  output:
+    | { type: 'text'; renderer: 'answer_window' }
+    | { type: 'image'; renderer: 'image_window'; image: { downloadable: boolean; openInNewTab: boolean } };
   ai: { provider: 'auto'; model: string | null; temperature: number; maxTokens: number };
   prompt: { system: string; user: string };
   window: { resultPosition: 'inherit' | 'under_action' | 'floating'; theme: 'inherit' };
@@ -32,6 +34,7 @@ interface PresetLink {
   publishedAt?: string | null;
   moderationStatus?: string;
   createdAt?: string;
+  capability?: { capabilityKey: string; inputLabel: string; outputLabel: string };
 }
 const DEFAULT_SCENARIO_PROMPT_SYSTEM = 'You are a helpful assistant.';
 const DEFAULT_SCENARIO_PROMPT_USER = 'Selected text:\n{TEXT}\n\nComplete the requested task.';
@@ -174,6 +177,8 @@ export function ExtensionScenariosClient() {
 function Editor({ scenario, onCancel, onSave }: { scenario: ScenarioConfig; onCancel: () => void; onSave: (s: ScenarioConfig) => Promise<void> }) {
   const [form, setForm] = useState<ScenarioConfig>(scenario);
   const [err, setErr] = useState<string | null>(null);
+  const [modelMode, setModelMode] = useState<'default' | 'manual'>(scenario.ai.model ? 'manual' : 'default');
+  const isImageScenario = form.output.type === 'image';
   const validation = useMemo(() => {
     if (!form.name?.trim() || form.name.trim().length > 80) return 'Название: 1..80';
     if (!form.buttonLabel?.trim() || form.buttonLabel.trim().length > 28) return 'Текст кнопки: 1..28';
@@ -184,12 +189,23 @@ function Editor({ scenario, onCancel, onSave }: { scenario: ScenarioConfig; onCa
     if (!Number.isInteger(Number(form.menuOrder)) || Number(form.menuOrder) < -10000 || Number(form.menuOrder) > 10000) return 'menuOrder: целое -10000..10000';
     if (!Number.isFinite(Number(form.ai.temperature)) || Number(form.ai.temperature) < 0 || Number(form.ai.temperature) > 2) return 'temperature: 0..2';
     if (!Number.isInteger(Number(form.ai.maxTokens)) || Number(form.ai.maxTokens) < 1 || Number(form.ai.maxTokens) > 20000) return 'maxTokens: 1..20000';
+    if (form.input?.type !== 'selection_text') return 'Поддерживается только input.type = selection_text.';
+    if (!['text', 'image'].includes(form.output?.type)) return 'Поддерживаются только output.type = text или image.';
+    if (form.output.type === 'text' && form.output.renderer !== 'answer_window') return 'Для text нужен renderer = answer_window.';
+    if (form.output.type === 'image' && form.output.renderer !== 'image_window') return 'Для image нужен renderer = image_window.';
     if (!['inherit', 'under_action', 'floating'].includes(form.window.resultPosition)) return 'Некорректное положение окна';
     return null;
   }, [form]);
 
-  return <article className='panel'><h3>Редактор сценария</h3><p>Input: Выделенный текст · Output: Текст</p>{err ? <p>{err}</p> : null}
+  return <article className='panel'><h3>Редактор сценария</h3>{err ? <p>{err}</p> : null}
     <div style={{ display: 'grid', gap: 8 }}>
+      <h4>Тип сценария</h4>
+      <label><input type='radio' checked={form.output.type === 'text'} onChange={() => setForm({ ...form, input: { type: 'selection_text' }, output: { type: 'text', renderer: 'answer_window' } })} /> Выделенный текст → Текст</label>
+      <label><input type='radio' checked={form.output.type === 'image'} onChange={() => setForm({ ...form, input: { type: 'selection_text' }, output: { type: 'image', renderer: 'image_window', image: { downloadable: true, openInNewTab: true } } })} /> Выделенный текст → Изображение</label>
+      <label style={{ opacity: 0.6 }}><input type='radio' disabled /> Скриншот → Текст <small>Скоро</small></label>
+      <label style={{ opacity: 0.6 }}><input type='radio' disabled /> Текст + скриншот → Текст <small>Скоро</small></label>
+      <label style={{ opacity: 0.6 }}><input type='radio' disabled /> Файл → Текст <small>Скоро</small></label>
+      <label style={{ opacity: 0.6 }}><input type='radio' disabled /> Multi-output <small>Скоро</small></label>
       <input placeholder='Название' value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
       <textarea placeholder='Описание' value={form.description ?? ''} onChange={(e) => setForm({ ...form, description: e.target.value })} />
       <input placeholder='Текст кнопки' value={form.buttonLabel} onChange={(e) => setForm({ ...form, buttonLabel: e.target.value })} />
@@ -197,14 +213,26 @@ function Editor({ scenario, onCancel, onSave }: { scenario: ScenarioConfig; onCa
       <label><input type='checkbox' checked={form.enabled} onChange={(e) => setForm({ ...form, enabled: e.target.checked })} /> Включён</label>
       <label><input type='checkbox' checked={form.showInSelectionMenu} onChange={(e) => setForm({ ...form, showInSelectionMenu: e.target.checked })} /> Показывать в меню выделения</label>
       <input type='number' placeholder='Порядок в меню' value={form.menuOrder} onChange={(e) => setForm({ ...form, menuOrder: Number(e.target.value) })} />
-      <input placeholder='Модель (по умолчанию = пусто)' value={form.ai.model ?? ''} onChange={(e) => setForm({ ...form, ai: { ...form.ai, provider: 'auto', model: e.target.value || null } })} />
+      <h4>Модель</h4>
+      <select value={modelMode} onChange={(e) => { const next = e.target.value as 'default' | 'manual'; setModelMode(next); if (next === 'default') setForm({ ...form, ai: { ...form.ai, model: null } }); }}>
+        <option value='default'>По умолчанию</option>
+        <option value='manual'>Manual model ID</option>
+      </select>
+      {modelMode === 'manual' ? <input placeholder='Model ID' value={form.ai.model ?? ''} onChange={(e) => setForm({ ...form, ai: { ...form.ai, provider: 'auto', model: e.target.value || null } })} /> : null}
+      <p>{modelMode === 'default' ? `Input: text · Output: ${isImageScenario ? 'image' : 'text'}` : `Input: text · Output: ${isImageScenario ? 'image' : 'text'} (предполагается)`}</p>
+      {modelMode === 'manual' ? <p>{isImageScenario ? 'Manual model capabilities are not known. Image generation may fail.' : 'Модель указана вручную. Возможности будут проверены во время выполнения.'}</p> : null}
       <input type='number' step='0.1' min={0} max={2} placeholder='Temperature' value={form.ai.temperature} onChange={(e) => setForm({ ...form, ai: { ...form.ai, temperature: Number(e.target.value) } })} />
       <input type='number' min={1} max={20000} placeholder='Max tokens' value={form.ai.maxTokens} onChange={(e) => setForm({ ...form, ai: { ...form.ai, maxTokens: Number(e.target.value) } })} />
       <textarea placeholder='Системный промпт' value={form.prompt.system} onChange={(e) => setForm({ ...form, prompt: { ...form.prompt, system: e.target.value } })} />
       <textarea placeholder='Пользовательский промпт' value={form.prompt.user} onChange={(e) => setForm({ ...form, prompt: { ...form.prompt, user: e.target.value } })} />
       <select value={form.window.resultPosition} onChange={(e) => setForm({ ...form, window: { ...form.window, resultPosition: e.target.value as ScenarioConfig['window']['resultPosition'] } })}><option value='inherit'>Наследовать настройки расширения</option><option value='under_action'>Сразу под меню</option><option value='floating'>В активной зоне или кастомном месте</option></select>
+      <h4>Окно результата</h4>
+      <p>Output type: {isImageScenario ? 'Image' : 'Text'}</p>
+      <p>Renderer: {isImageScenario ? 'Image window' : 'Answer window'}</p>
+      {isImageScenario ? <p>Actions: Download, Open in new tab</p> : null}
+      <p>Window position: {form.window.resultPosition}</p>
     </div>
     <p>Подсказки: {'{TEXT}'}, {'{PAGE_TITLE}'}, {'{PAGE_URL}'}, {'{LANGUAGE}'}</p>
-    <div className='link-row'><button className='btn-primary' disabled={Boolean(validation)} onClick={async () => { if (validation) return setErr(validation); try { await onSave({ ...form, schemaVersion: 1, ai: { ...form.ai, provider: 'auto', model: form.ai.model?.trim() ? form.ai.model.trim() : null, temperature: Number(form.ai.temperature), maxTokens: Number(form.ai.maxTokens) }, input: defaults.input, output: defaults.output, window: { resultPosition: form.window.resultPosition, theme: 'inherit' } }); } catch (e) { setErr((e as Error).message); } }}>Сохранить</button><button className='btn-ghost' onClick={onCancel}>Отмена</button></div>
+    <div className='link-row'><button className='btn-primary' disabled={Boolean(validation)} onClick={async () => { if (validation) return setErr(validation); try { await onSave({ ...form, schemaVersion: 1, ai: { ...form.ai, provider: 'auto', model: form.ai.model?.trim() ? form.ai.model.trim() : null, temperature: Number(form.ai.temperature), maxTokens: Number(form.ai.maxTokens) }, input: defaults.input, output: form.output.type === 'image' ? { type: 'image', renderer: 'image_window', image: { downloadable: form.output.image?.downloadable ?? true, openInNewTab: form.output.image?.openInNewTab ?? true } } : defaults.output, window: { resultPosition: form.window.resultPosition, theme: 'inherit' } }); } catch (e) { setErr((e as Error).message); } }}>Сохранить</button><button className='btn-ghost' onClick={onCancel}>Отмена</button></div>
   </article>;
 }
