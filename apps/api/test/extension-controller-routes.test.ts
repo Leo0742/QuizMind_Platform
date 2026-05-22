@@ -166,3 +166,64 @@ test('POST /extension/ai/image delegates to provider-backed image service and re
   assert.equal(res.ok, true);
   assert.equal((res.data as any).image.url, 'https://img.test/x.png');
 });
+
+test('GET /extension/ai/models?type=image maps image-output model metadata correctly', async () => {
+  const controller = new ExtensionControlController(
+    {} as any,
+    { resolveInstallationSession: async () => ({ installation: { installationId: 'i1', userId: 'u1' } }) } as any,
+    {
+      listModelsForCurrentSession: async () => ({
+        models: [
+          {
+            provider: 'openai',
+            modelId: 'openai/gpt-5.4-image-2',
+            displayName: 'GPT-5.4 Image 2',
+            capabilityTags: ['text', 'image_output'],
+            architecture: { input_modalities: ['text'], output_modalities: ['image'] },
+            availability: 'active',
+          },
+        ],
+      }),
+    } as any,
+  );
+  const result = await controller.listExtensionModels('image', 'Bearer token');
+  const model = (result.data as any).models[0];
+  assert.equal(model.type, 'image');
+  assert.equal(model.supportsImageOutput, true);
+  assert.deepEqual(model.architecture.output_modalities, ['image']);
+});
+
+test('GET /extension/ai/models keeps vision-only and text-only outputs as text', async () => {
+  const controller = new ExtensionControlController(
+    {} as any,
+    { resolveInstallationSession: async () => ({ installation: { installationId: 'i1', userId: 'u1' } }) } as any,
+    {
+      listModelsForCurrentSession: async () => ({
+        models: [
+          {
+            provider: 'openrouter',
+            modelId: 'meta/llama-vision',
+            displayName: 'Llama Vision',
+            capabilityTags: ['text', 'vision'],
+            architecture: { input_modalities: ['text', 'image'], output_modalities: ['text'] },
+            availability: 'active',
+          },
+          {
+            provider: 'openai',
+            modelId: 'gpt-4.1-mini',
+            displayName: 'GPT-4.1 Mini',
+            capabilityTags: ['text'],
+            architecture: { input_modalities: ['text'], output_modalities: ['text'] },
+            availability: 'active',
+          },
+        ],
+      }),
+    } as any,
+  );
+  const all = await controller.listExtensionModels(undefined, 'Bearer token');
+  const [vision, text] = (all.data as any).models;
+  assert.equal(vision.supportsImageOutput, false);
+  assert.deepEqual(vision.architecture.output_modalities, ['text']);
+  assert.equal(text.supportsImageOutput, false);
+  assert.deepEqual(text.architecture.output_modalities, ['text']);
+});
