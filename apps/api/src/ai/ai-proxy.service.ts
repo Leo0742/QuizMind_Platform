@@ -4,6 +4,7 @@ import {
   BadGatewayException,
   BadRequestException,
   ForbiddenException,
+  GatewayTimeoutException,
   HttpException,
   Inject,
   Injectable,
@@ -494,6 +495,19 @@ function createRequestAbortSignal(input: {
   return fallbackController.signal;
 }
 
+function isAbortLikeError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') {
+    return false;
+  }
+  const maybeError = error as { name?: unknown; message?: unknown };
+  const name = typeof maybeError.name === 'string' ? maybeError.name.toLowerCase() : '';
+  const message = typeof maybeError.message === 'string' ? maybeError.message.toLowerCase() : '';
+  if (name === 'aborterror' || name === 'timeouterror') {
+    return true;
+  }
+  return message.includes('aborted') || message.includes('timeout');
+}
+
 @Injectable()
 export class AiProxyService {
   private readonly env = loadApiEnv();
@@ -679,17 +693,28 @@ export class AiProxyService {
       return this.invokeRouterAiImageGeneration(input);
     }
     const endpoint = `${trimTrailingSlash(this.env.openRouterApiUrl)}/images/generations`;
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${input.apiKey}`,
-        'Content-Type': 'application/json',
-        'HTTP-Referer': this.env.appUrl,
-        'X-Title': this.env.openRouterAppName,
-      },
-      body: JSON.stringify({ model: input.model, prompt: input.prompt, ...(input.size ? { size: input.size } : {}), ...(input.quality ? { quality: input.quality } : {}) }),
-      signal: createRequestAbortSignal({ timeoutMs: this.env.openRouterTimeoutMs }),
-    });
+    const timeoutMs = this.env.openRouterImageTimeoutMs;
+    const startedAt = Date.now();
+    let response: Response;
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${input.apiKey}`,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': this.env.appUrl,
+          'X-Title': this.env.openRouterAppName,
+        },
+        body: JSON.stringify({ model: input.model, prompt: input.prompt, ...(input.size ? { size: input.size } : {}), ...(input.quality ? { quality: input.quality } : {}) }),
+        signal: createRequestAbortSignal({ timeoutMs }),
+      });
+    } catch (error) {
+      if (isAbortLikeError(error)) {
+        console.warn(JSON.stringify({ eventType: 'ai_proxy.image_provider_timeout', provider: input.provider, model: input.model, timeoutMs, durationMs: Date.now() - startedAt }));
+        throw new GatewayTimeoutException(`OpenRouter image generation timed out after ${timeoutMs}ms. Try a smaller prompt or increase OPENROUTER_IMAGE_TIMEOUT_MS.`);
+      }
+      throw new BadGatewayException('OpenRouter image request failed before receiving a response.');
+    }
     const payload = this.tryParseJson(await response.text());
     if (!response.ok) {
       throw new BadGatewayException(`OpenRouter image request failed with status ${response.status}.`);
@@ -704,19 +729,30 @@ export class AiProxyService {
     prompt: string;
   }): Promise<unknown> {
     const endpoint = `${trimTrailingSlash(this.env.routerAiApiUrl)}/chat/completions`;
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${input.apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: input.model,
-        messages: [{ role: 'user', content: input.prompt }],
-        stream: false,
-      }),
-      signal: createRequestAbortSignal({ timeoutMs: this.env.routerAiTimeoutMs }),
-    });
+    const timeoutMs = this.env.routerAiImageTimeoutMs;
+    const startedAt = Date.now();
+    let response: Response;
+    try {
+      response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${input.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: input.model,
+          messages: [{ role: 'user', content: input.prompt }],
+          stream: false,
+        }),
+        signal: createRequestAbortSignal({ timeoutMs }),
+      });
+    } catch (error) {
+      if (isAbortLikeError(error)) {
+        console.warn(JSON.stringify({ eventType: 'ai_proxy.image_provider_timeout', provider: input.provider, model: input.model, timeoutMs, durationMs: Date.now() - startedAt }));
+        throw new GatewayTimeoutException(`RouterAI image generation timed out after ${timeoutMs}ms. Try a smaller prompt or increase ROUTERAI_IMAGE_TIMEOUT_MS.`);
+      }
+      throw new BadGatewayException('RouterAI image request failed before receiving a response.');
+    }
     const bodyText = await response.text();
     const payload = this.tryParseJson(bodyText);
     if (!response.ok) {

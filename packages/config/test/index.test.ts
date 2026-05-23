@@ -40,6 +40,32 @@ test('loadApiEnv reads RouterAI settings and platform AI provider', () => {
   assert.equal(env.routerAiTimeoutMs, 12345);
 });
 
+test('loadApiEnv reads image timeout settings and defaults to 180000ms', () => {
+  const defaults = loadApiEnv({
+    NODE_ENV: 'development',
+    QUIZMIND_RUNTIME_MODE: 'connected',
+    APP_URL: 'https://app.quizmind.dev',
+    API_URL: 'https://api.quizmind.dev',
+    JWT_SECRET: 'super-secret',
+    JWT_REFRESH_SECRET: 'refresh-secret',
+  });
+  assert.equal(defaults.routerAiImageTimeoutMs, 180000);
+  assert.equal(defaults.openRouterImageTimeoutMs, 180000);
+
+  const env = loadApiEnv({
+    NODE_ENV: 'development',
+    QUIZMIND_RUNTIME_MODE: 'connected',
+    APP_URL: 'https://app.quizmind.dev',
+    API_URL: 'https://api.quizmind.dev',
+    JWT_SECRET: 'super-secret',
+    JWT_REFRESH_SECRET: 'refresh-secret',
+    ROUTERAI_IMAGE_TIMEOUT_MS: '222222',
+    OPENROUTER_IMAGE_TIMEOUT_MS: '333333',
+  });
+  assert.equal(env.routerAiImageTimeoutMs, 222222);
+  assert.equal(env.openRouterImageTimeoutMs, 333333);
+});
+
 test('loadApiEnv keeps browser extension origins in CORS allowlist', () => {
   const env = loadApiEnv({
     NODE_ENV: 'development',

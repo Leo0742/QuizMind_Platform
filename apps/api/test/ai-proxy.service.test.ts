@@ -197,10 +197,12 @@ function createService(
     openRouterApiKey: 'sk-or-test_123456789',
     openRouterAppName: 'QuizMind Test',
     openRouterTimeoutMs: 30000,
+    openRouterImageTimeoutMs: 180000,
     platformAiProvider: 'openrouter',
     routerAiApiUrl: 'https://routerai.ru/api/v1',
     routerAiApiKey: 'routerai-test_123456789',
     routerAiTimeoutMs: 30000,
+    routerAiImageTimeoutMs: 180000,
     polzaApiUrl: 'https://api.polza.ai/v1',
     polzaApiKey: undefined,
     polzaTimeoutMs: 30000,
@@ -1386,6 +1388,50 @@ test('AiProxyService.generateImageForCurrentSession RouterAI non-ok returns safe
     () => service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] }),
     /RouterAI image request failed with status 429: rate limited/i,
   );
+});
+
+test('AiProxyService.generateImageForCurrentSession RouterAI timeout throws 504', async (t) => {
+  const { service } = createService(undefined, { defaultModel: 'openai/gpt-5.4-image-2' });
+  (service as any).env.routerAiImageTimeoutMs = 123456;
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = (async () => { throw new DOMException('The operation was aborted due to timeout', 'TimeoutError'); }) as typeof fetch;
+  t.after(() => { globalThis.fetch = previousFetch; });
+  (service as any).prepareProxyInvocation = async () => ({
+    session: createSession(), request: { messages: [{ role: 'user', content: 'draw' }] }, resolvedModel: 'openai/gpt-5.4-image-2', provider: 'routerai',
+    keySource: 'platform', apiKey: 'routerai-key', requestId: 'req', occurredAt: new Date(), quotaCounter: { consumed: 0, periodStart: new Date(), periodEnd: new Date() },
+  });
+  (service as any).listModelsForCurrentSession = async () => ({
+    providers: [], models: [{ provider: 'routerai', modelId: 'openai/gpt-5.4-image-2', displayName: 'Image', capabilityTags: ['text'], availability: 'available', outputModalities: ['images'] }],
+    defaultProvider: 'routerai', defaultModel: 'openai/gpt-5.4-image-2',
+  });
+  await assert.rejects(
+    () => service.generateImageForCurrentSession(createSession(), { model: 'openai/gpt-5.4-image-2', messages: [{ role: 'user', content: 'draw' }] }),
+    /RouterAI image generation timed out after 123456ms/i,
+  );
+});
+
+test('AiProxyService.generateImageForCurrentSession OpenRouter timeout throws 504 and uses image timeout', async (t) => {
+  const { service } = createService(undefined, { defaultModel: 'openrouter/auto' });
+  (service as any).env.openRouterImageTimeoutMs = 98765;
+  (service as any).env.openRouterTimeoutMs = 123;
+  let observedSignal: AbortSignal | undefined;
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = (async (_url, init) => {
+    observedSignal = init?.signal as AbortSignal | undefined;
+    throw new Error('aborted by timeout');
+  }) as typeof fetch;
+  t.after(() => { globalThis.fetch = previousFetch; });
+  (service as any).listModelsForCurrentSession = async () => ({
+    providers: [],
+    models: [{ provider: 'openrouter', modelId: 'openrouter/auto', displayName: 'Image', capabilityTags: ['image_output'], availability: 'available' }],
+    defaultProvider: 'openrouter',
+    defaultModel: 'openrouter/auto',
+  });
+  await assert.rejects(
+    () => service.generateImageForCurrentSession(createSession(), { model: 'openrouter/auto', messages: [{ role: 'user', content: 'draw' }] }),
+    /OpenRouter image generation timed out after 98765ms/i,
+  );
+  assert.ok(observedSignal);
 });
 
 test('AiProxyService.generateImageForCurrentSession returns provider-specific unsupported message', async () => {
