@@ -32,6 +32,7 @@ import {
 import { AuthService } from '../auth/auth.service';
 import { type CurrentSessionSnapshot } from '../auth/auth.types';
 import { AiProxyService } from '../ai/ai-proxy.service';
+import { isImageOutputModel, supportsVisionInput } from '../ai/model-capabilities';
 import { ExtensionControlService } from './extension-control.service';
 import { buildInstallationRuntimeSession } from './extension-auth-session';
 
@@ -160,30 +161,34 @@ function readOptionalBoolean(value: unknown): boolean | undefined {
 }
 
 function mapProviderModelToExtensionShape(entry: ProviderModelCatalogEntry) {
-  const hasVision = entry.capabilityTags.includes('vision') || entry.capabilityTags.includes('image');
+  const hasVision = supportsVisionInput(entry);
+  const hasImageOutput = isImageOutputModel(entry);
   const hasText = entry.capabilityTags.includes('text');
   const isFree = entry.capabilityTags.includes('free');
+  const inputModalities = hasVision ? ['text', 'image'] : ['text'];
+  const outputModalities = hasImageOutput ? ['image'] : ['text'];
+  const modality = hasImageOutput
+    ? hasVision
+      ? 'image+text->image'
+      : 'text->image'
+    : hasVision
+      ? hasText
+        ? 'image+text->text'
+        : 'image->text'
+      : 'text->text';
 
   return {
     id: entry.modelId,
     name: entry.displayName,
-    type: hasVision ? 'image' : 'chat',
+    type: hasImageOutput ? 'image' : 'chat',
     short_description: `${entry.displayName} (${entry.provider})`,
     provider: entry.provider,
     availability: entry.availability,
     supportsVision: hasVision,
+    supportsImageOutput: hasImageOutput,
+    capabilityTags: entry.capabilityTags,
     isFree,
-    architecture: hasVision
-      ? {
-          modality: hasText ? 'image+text->text' : 'image->text',
-          input_modalities: hasText ? ['text', 'image'] : ['image'],
-          output_modalities: ['text'],
-        }
-      : {
-          modality: 'text->text',
-          input_modalities: ['text'],
-          output_modalities: ['text'],
-        },
+    architecture: { modality, input_modalities: inputModalities, output_modalities: outputModalities },
   };
 }
 
@@ -464,7 +469,11 @@ export class ExtensionControlController {
       const typeFilter = (type ?? '').trim().toLowerCase();
       const filtered = catalog.models.filter((entry) => {
         if (typeFilter === 'image') {
-          return entry.capabilityTags.includes('vision') || entry.capabilityTags.includes('image');
+          return isImageOutputModel(entry);
+        }
+
+        if (typeFilter === 'vision') {
+          return supportsVisionInput(entry);
         }
 
         if (typeFilter === 'chat') {

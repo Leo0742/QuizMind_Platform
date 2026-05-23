@@ -34,6 +34,7 @@ import {
 } from './ai-proxy.repository';
 import { OpenRouterCatalogService } from './openrouter-catalog.service';
 import { RouterAiCatalogService } from './routerai-catalog.service';
+import { isImageOutputModel } from './model-capabilities';
 import { WalletRepository } from '../wallet/wallet.repository';
 import { AiPricingService } from './ai-pricing.service';
 import { UserBillingOverrideRepository } from './user-billing-override.repository';
@@ -393,34 +394,6 @@ function resolveProviderModelForUpstream(provider: AiProvider, model: string): s
 
 function modelSupportsVision(model: AiModelsCatalogPayload['models'][number]): boolean {
   return model.capabilityTags.some((tag) => tag === 'vision');
-}
-
-function readStringArray(value: unknown): string[] {
-  if (!Array.isArray(value)) return [];
-  return value.filter((item): item is string => typeof item === 'string').map((item) => item.toLowerCase());
-}
-
-function isImageOutputModel(entry: ProviderModelCatalogEntry | undefined): boolean {
-  if (!entry) return false;
-  const tags = (entry.capabilityTags ?? []).map((tag) => tag.toLowerCase());
-  if (tags.includes('image_output') || tags.includes('image-generation')) return true;
-
-  const record = entry as unknown as Record<string, unknown>;
-  const architecture = record.architecture && typeof record.architecture === 'object' && !Array.isArray(record.architecture)
-    ? (record.architecture as Record<string, unknown>)
-    : undefined;
-
-  const outputCandidates = [
-    ...readStringArray(record.outputModalities),
-    ...readStringArray(record.output_modalities),
-    ...readStringArray(record.supported_output_modalities),
-    ...readStringArray(architecture?.output_modalities),
-    ...readStringArray(architecture?.output),
-  ];
-
-  if (outputCandidates.includes('image') || outputCandidates.includes('images')) return true;
-
-  return /(^|\/)(gpt-[\w.-]*image[\w.-]*|gpt-image-[\w.-]+|dall-e|flux|stable-diffusion|imagen)/i.test(entry.modelId);
 }
 
 function normalizeImageGenerationResponse(payload: unknown): NormalizedGeneratedImagePayload {

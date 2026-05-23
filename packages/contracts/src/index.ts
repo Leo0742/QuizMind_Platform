@@ -1263,6 +1263,15 @@ export interface ProviderModelCatalogEntry {
   modelId: string;
   displayName: string;
   capabilityTags: string[];
+  architecture?: {
+    modality?: string;
+    input_modalities?: string[];
+    output_modalities?: string[];
+  };
+  supported_parameters?: string[];
+  output_modalities?: string[];
+  outputModalities?: string[];
+  supported_output_modalities?: string[];
   availability: ProviderAvailabilityState;
   latencyClass?: 'low' | 'standard' | 'high';
   planAvailability?: string[];

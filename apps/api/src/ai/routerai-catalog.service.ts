@@ -76,10 +76,10 @@ export function normalizeRouterAiCatalogPayload(payload: unknown): ProviderModel
 
     const hasVision =
       inputModalities.includes('image') ||
-      outputModalities.includes('image') ||
       modality.includes('image') ||
       supportedParameters.some((parameter) => parameter.includes('image')) ||
       /\b(vision|vl|gemini|gpt-4o|claude-3\.5-sonnet)\b/.test(searchText);
+    const hasImageOutput = outputModalities.includes('image') || outputModalities.includes('images');
     const hasText =
       inputModalities.length === 0 ||
       inputModalities.includes('text') ||
@@ -94,12 +94,22 @@ export function normalizeRouterAiCatalogPayload(payload: unknown): ProviderModel
     if (hasVision) {
       capabilityTags.push('vision');
     }
+    if (hasImageOutput) {
+      capabilityTags.push('image_output');
+    }
 
     models.push({
       provider: 'routerai',
       modelId: id,
       displayName: name,
       capabilityTags,
+      architecture: {
+        ...(modality ? { modality } : {}),
+        ...(inputModalities.length ? { input_modalities: inputModalities } : {}),
+        ...(outputModalities.length ? { output_modalities: outputModalities } : {}),
+      },
+      ...(supportedParameters.length ? { supported_parameters: supportedParameters } : {}),
+      ...(outputModalities.length ? { output_modalities: outputModalities } : {}),
       availability: 'active',
       latencyClass: 'standard',
       planAvailability: ['free', 'pro', 'business'],

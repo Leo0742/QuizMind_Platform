@@ -289,6 +289,17 @@ test('ExtensionControlController.listExtensionModels returns extension-friendly 
             modelId: 'gpt-4.1-mini',
             displayName: 'GPT-4.1 Mini',
             capabilityTags: ['text', 'vision'],
+            architecture: { input_modalities: ['text', 'image'], output_modalities: ['text'] },
+            availability: 'active',
+            latencyClass: 'standard',
+            planAvailability: ['pro'],
+          },
+          {
+            provider: 'openai',
+            modelId: 'openai/gpt-5.4-image-2',
+            displayName: 'GPT-5.4 Image 2',
+            capabilityTags: ['text', 'image_output'],
+            architecture: { input_modalities: ['text'], output_modalities: ['image'] },
             availability: 'active',
             latencyClass: 'standard',
             planAvailability: ['pro'],
@@ -316,8 +327,9 @@ test('ExtensionControlController.listExtensionModels returns extension-friendly 
   assert.equal(imageResponse.ok, true);
   assert.deepEqual(
     (imageResponse.data as any).models.map((entry: Record<string, unknown>) => entry.id),
-    ['gpt-4.1-mini'],
+    ['openai/gpt-5.4-image-2'],
   );
+  assert.deepEqual((imageResponse.data as any).models[0].architecture.output_modalities, ['image']);
 });
 
 test('ExtensionControlController.listExtensionModels returns RouterAI models when selected upstream', async () => {
