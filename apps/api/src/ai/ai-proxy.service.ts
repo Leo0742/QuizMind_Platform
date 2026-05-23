@@ -715,7 +715,17 @@ export class AiProxyService {
       }
       throw new BadGatewayException('OpenRouter image request failed before receiving a response.');
     }
-    const payload = this.tryParseJson(await response.text());
+    let responseText: string;
+    try {
+      responseText = await response.text();
+    } catch (error) {
+      if (isAbortLikeError(error)) {
+        console.warn(JSON.stringify({ eventType: 'ai_proxy.image_provider_timeout', provider: input.provider, model: input.model, timeoutMs, durationMs: Date.now() - startedAt, phase: 'body' }));
+        throw new GatewayTimeoutException(`OpenRouter image generation timed out after ${timeoutMs}ms. Try a smaller prompt or increase OPENROUTER_IMAGE_TIMEOUT_MS.`);
+      }
+      throw new BadGatewayException('OpenRouter image response could not be read.');
+    }
+    const payload = this.tryParseJson(responseText);
     if (!response.ok) {
       throw new BadGatewayException(`OpenRouter image request failed with status ${response.status}.`);
     }
@@ -753,7 +763,16 @@ export class AiProxyService {
       }
       throw new BadGatewayException('RouterAI image request failed before receiving a response.');
     }
-    const bodyText = await response.text();
+    let bodyText: string;
+    try {
+      bodyText = await response.text();
+    } catch (error) {
+      if (isAbortLikeError(error)) {
+        console.warn(JSON.stringify({ eventType: 'ai_proxy.image_provider_timeout', provider: input.provider, model: input.model, timeoutMs, durationMs: Date.now() - startedAt, phase: 'body' }));
+        throw new GatewayTimeoutException(`RouterAI image generation timed out after ${timeoutMs}ms. Try a smaller prompt or increase ROUTERAI_IMAGE_TIMEOUT_MS.`);
+      }
+      throw new BadGatewayException('RouterAI image response could not be read.');
+    }
     const payload = this.tryParseJson(bodyText);
     if (!response.ok) {
       const message = this.extractProviderErrorMessage(payload, bodyText) ?? 'Unknown provider error';
