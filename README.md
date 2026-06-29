@@ -15,13 +15,26 @@
   <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-111827?style=for-the-badge&logo=docker&logoColor=2496ED" alt="Docker" /></a>
 </p>
 
-> This is a **contributed fork / collaborative project** based on the upstream QuizMind platform repository. The fork relationship is intentionally preserved so the development history stays visible.
+> This is a **collaborative project / contributed fork**. The fork relationship is intentionally preserved so the real development history stays visible, including the commit history that shows my main work on this fork.
 
 ## Overview
 
 QuizMind Platform is a monorepo foundation for a SaaS-style control plane around a quiz/learning product. It combines a web dashboard, backend API, background workers, shared domain packages, database schema, support workflows, billing primitives, feature flags, remote configuration, and extension compatibility policies.
 
 The project is useful as a portfolio example because it shows work with a real multi-application architecture instead of a single isolated demo app.
+
+## My contribution
+
+Most of the visible development history in this fork is authored by me. I keep the repository as a fork to make the collaboration context and commit history transparent instead of re-uploading the same code as a new repository without history.
+
+My work in this fork focused on turning the project into a stronger platform-style monorepo and included:
+
+- evolving the monorepo structure around `apps/web`, `apps/api`, `apps/worker`, and shared `packages/*` boundaries;
+- working across the Next.js web app, admin/dashboard areas, and support-oriented UI flows;
+- extending NestJS API modules and shared domain packages for auth, billing, permissions, feature flags, remote config, extension compatibility, logging, queues, and support/admin workflows;
+- connecting Prisma/PostgreSQL-backed runtime flows for auth, workspaces, billing, admin users, remote config, extension bootstrap, support tickets, and operator support sessions;
+- maintaining Docker-based local infrastructure with PostgreSQL, Redis, API, web, worker services, health checks, environment examples, and runbooks;
+- improving reliability through TypeScript type checks, workspace scripts, tests, validation, and clearer operational documentation.
 
 ## What this project demonstrates
 
@@ -68,7 +81,7 @@ flowchart LR
 - Role and permission foundations: system roles, workspace roles, RBAC/ABAC, and entitlement-aware access control.
 - Billing primitives: subscriptions, entitlements, add-ons, overrides, wallet and usage-related domain models.
 - Feature flags, remote config layers, extension version compatibility, and bootstrap policies.
-- Admin and support surfaces: user directory, support ticket queue, ticket workflow transitions, impersonation sessions, handoff notes, favorite queue presets, and audit-backed timeline history.
+- Admin and support surfaces: user directory, support ticket queue, ticket workflow transitions, operator support sessions, handoff notes, favorite queue presets, and audit-backed timeline history.
 - Audit, activity, domain, telemetry, security-event, and structured logging foundations.
 
 ## Tech stack
@@ -194,13 +207,7 @@ corepack pnpm --filter @quizmind/database db:migrate:dev
 corepack pnpm --filter @quizmind/database db:seed
 ```
 
-Default demo credentials after seeding:
-
-| Persona | Email | Password |
-|---|---|---|
-| Platform admin | `admin@quizmind.dev` | `demo-password` |
-| Support admin | `support@quizmind.dev` | `demo-password` |
-| Workspace viewer | `viewer@quizmind.dev` | `demo-password` |
+Demo personas are available after seeding; see the seed data and local runbooks for the current development credentials.
 
 ## Demo personas
 
@@ -227,7 +234,7 @@ Connected mode includes Prisma-backed foundations for:
 - `GET /admin/feature-flags`.
 - `POST /admin/remote-config/publish`.
 - `POST /extension/bootstrap` for compatibility policy, feature flags, active remote config layers, and workspace subscription plan.
-- Support impersonation sessions, ticket queues, ticket ownership/workflow transitions, handoff notes, audit-backed timeline history, and operator favorite presets.
+- Support sessions, ticket queues, ticket ownership/workflow transitions, handoff notes, audit-backed timeline history, and operator favorite presets.
 
 ## Documentation map
 
@@ -238,12 +245,12 @@ Connected mode includes Prisma-backed foundations for:
 - [`docs/remote-config-flow.md`](docs/remote-config-flow.md) — remote config publishing flow.
 - [`docs/billing-flow.md`](docs/billing-flow.md) — billing and entitlement flow.
 - [`docs/web-app-flow.md`](docs/web-app-flow.md) — web application flow.
-- [`docs/support-flow.md`](docs/support-flow.md) — support and impersonation workflows.
+- [`docs/support-flow.md`](docs/support-flow.md) — support and operator workflows.
 - [`docs/foundation-roadmap.md`](docs/foundation-roadmap.md) — planned platform foundation milestones.
 
 ## Status
 
-This repository represents an evolving platform foundation rather than a polished production product. Some modules are implemented as connected Prisma-backed flows, while others are intentionally modeled as platform primitives or roadmap-ready boundaries.
+This repository is an evolving platform foundation. Several connected Prisma-backed flows are implemented, while some platform modules remain intentionally structured as roadmap-ready primitives.
 
 ## Why it matters for review
 
