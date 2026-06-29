@@ -1,137 +1,259 @@
 # QuizMind Platform
 
-Monorepo foundation for the QuizMind control-plane platform.
+<p align="center">
+  <b>Collaborative full-stack control-plane platform for QuizMind</b><br />
+  Next.js web app · NestJS API · BullMQ worker · Prisma/PostgreSQL · Redis · Docker
+</p>
 
-## Target Architecture
+<p align="center">
+  <a href="https://nextjs.org/"><img src="https://img.shields.io/badge/Next.js-111827?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js" /></a>
+  <a href="https://nestjs.com/"><img src="https://img.shields.io/badge/NestJS-111827?style=for-the-badge&logo=nestjs&logoColor=E0234E" alt="NestJS" /></a>
+  <a href="https://www.typescriptlang.org/"><img src="https://img.shields.io/badge/TypeScript-111827?style=for-the-badge&logo=typescript&logoColor=3178C6" alt="TypeScript" /></a>
+  <a href="https://www.prisma.io/"><img src="https://img.shields.io/badge/Prisma-111827?style=for-the-badge&logo=prisma&logoColor=2D3748" alt="Prisma" /></a>
+  <a href="https://www.postgresql.org/"><img src="https://img.shields.io/badge/PostgreSQL-111827?style=for-the-badge&logo=postgresql&logoColor=4169E1" alt="PostgreSQL" /></a>
+  <a href="https://redis.io/"><img src="https://img.shields.io/badge/Redis-111827?style=for-the-badge&logo=redis&logoColor=FF4438" alt="Redis" /></a>
+  <a href="https://www.docker.com/"><img src="https://img.shields.io/badge/Docker-111827?style=for-the-badge&logo=docker&logoColor=2496ED" alt="Docker" /></a>
+</p>
 
-- `apps/web` - one Next.js application for the landing site, auth flows, user dashboard, and admin panel.
-- `apps/api` - NestJS backend for auth, billing, RBAC, feature flags, remote config, extension compatibility, and admin APIs.
-- `apps/worker` - BullMQ workers and scheduled jobs for webhooks, billing, notifications, quota resets, and config propagation.
-- `packages/*` - shared contracts and domain libraries used across the platform.
+> This is a **contributed fork / collaborative project** based on the upstream QuizMind platform repository. The fork relationship is intentionally preserved so the development history stays visible.
 
-## Product Modules Planned From Day One
+## Overview
 
-- Auth, sessions, email verification, and workspace membership.
-- MFA is modeled in the schema but remains a planned post-auth hardening milestone unless explicitly pulled into MVP.
-- Flexible billing, subscriptions, entitlements, add-ons, and overrides.
-- RBAC + ABAC + entitlement-aware access control.
-- Feature flags, remote config, and extension compatibility policies.
-- Full audit, activity, domain, telemetry, and system logging.
+QuizMind Platform is a monorepo foundation for a SaaS-style control plane around a quiz/learning product. It combines a web dashboard, backend API, background workers, shared domain packages, database schema, support workflows, billing primitives, feature flags, remote configuration, and extension compatibility policies.
 
-## Shared Packages
+The project is useful as a portfolio example because it shows work with a real multi-application architecture instead of a single isolated demo app.
 
-- `contracts` - role, entitlement, billing, compatibility, and audit contracts.
-- `permissions` - permission registry plus system/workspace role resolution.
-- `auth` - session principal helpers plus password and token utilities for real auth flows.
-- `billing` - subscription status guards and entitlement resolution helpers.
-- `extension` - version and capability compatibility evaluation.
-- `logger` - structured log event helpers and secret redaction.
-- `config` - env-loading helpers for web, API, and workers.
-- `ui` - shared navigation today, with design-system primitives planned before major dashboard/admin buildout.
-- `database` - Prisma schema, migrations, seed data, and generated client boundary.
-- `email` - provider-neutral email templates and adapters for auth notifications.
-- `queue` - BullMQ integration helpers shared by API and worker.
+## What this project demonstrates
 
-## Environment Examples
+- **Full-stack platform architecture** with a Next.js web app, NestJS API, BullMQ worker, and shared packages.
+- **Backend product domains**: auth, workspaces, billing, RBAC/ABAC, entitlements, feature flags, remote config, extension compatibility, audit/security events, and support workflows.
+- **Database-backed runtime** with Prisma, PostgreSQL, migrations, seed data, demo users, and repository-backed API flows.
+- **Operational setup** with Docker Compose for PostgreSQL, Redis, API, web, and worker services.
+- **Team-oriented monorepo structure** using pnpm workspaces, Turborepo-style scripts, shared contracts, and typed package boundaries.
 
-- `apps/api/.env.example`
-- `apps/web/.env.example`
-- `apps/worker/.env.example`
+## Architecture
 
-## Workspace Commands
+```mermaid
+flowchart LR
+    Web[Next.js Web App] --> API[NestJS API]
+    API --> DB[(PostgreSQL / Prisma)]
+    API --> Redis[(Redis)]
+    Worker[BullMQ Worker] --> Redis
+    Worker --> DB
+    API --> Packages[Shared Packages]
+    Web --> Packages
+    Worker --> Packages
+
+    Packages --> Contracts[Contracts]
+    Packages --> Auth[Auth]
+    Packages --> Billing[Billing]
+    Packages --> Permissions[Permissions]
+    Packages --> Extension[Extension Compatibility]
+    Packages --> Logger[Logger]
+```
+
+## Main applications
+
+| Area | Path | Purpose |
+|---|---|---|
+| Web app | `apps/web` | Next.js application for landing pages, auth flows, dashboard, and admin/support surfaces. |
+| API | `apps/api` | NestJS backend for auth, billing, RBAC, feature flags, remote config, extension compatibility, support/admin APIs, and connected Prisma flows. |
+| Worker | `apps/worker` | BullMQ worker for background jobs, scheduled tasks, billing/notification workflows, quota resets, and config propagation. |
+| Shared packages | `packages/*` | Reusable contracts, permissions, auth, billing, extension, logger, config, database, email, queue, provider, usage, and UI boundaries. |
+| Documentation | `docs/*` | Architecture, data model, API surface, service composition, remote config, billing, web app, support, and Docker/platform runbooks. |
+
+## Product modules
+
+- Authentication, sessions, refresh/logout flows, email verification, and workspace membership.
+- Role and permission foundations: system roles, workspace roles, RBAC/ABAC, and entitlement-aware access control.
+- Billing primitives: subscriptions, entitlements, add-ons, overrides, wallet and usage-related domain models.
+- Feature flags, remote config layers, extension version compatibility, and bootstrap policies.
+- Admin and support surfaces: user directory, support ticket queue, ticket workflow transitions, impersonation sessions, handoff notes, favorite queue presets, and audit-backed timeline history.
+- Audit, activity, domain, telemetry, security-event, and structured logging foundations.
+
+## Tech stack
+
+| Layer | Technologies |
+|---|---|
+| Frontend | Next.js, React, TypeScript, shared UI package |
+| Backend | NestJS, TypeScript, workspace packages, typed contracts |
+| Database | Prisma, PostgreSQL, migrations, seed data |
+| Background jobs | BullMQ, Redis, worker service |
+| Infrastructure | Docker, Docker Compose, health checks, environment examples |
+| Tooling | pnpm, Turborepo-style workspace scripts, TypeScript type checking, Node test runner, Prettier |
+
+## Repository structure
+
+```text
+apps/
+  web/       # Next.js application
+  api/       # NestJS backend
+  worker/    # BullMQ background worker
+packages/
+  auth/
+  billing/
+  config/
+  contracts/
+  database/
+  email/
+  extension/
+  logger/
+  permissions/
+  providers/
+  queue/
+  secrets/
+  ui/
+  usage/
+docs/
+  architecture.md
+  api-surface.md
+  billing-flow.md
+  control-plane-primitives.md
+  data-model.md
+  foundation-roadmap.md
+  remote-config-flow.md
+  service-composition.md
+  support-flow.md
+  web-app-flow.md
+infra/
+scripts/
+```
+
+## Quick start
+
+### Prerequisites
+
+- Node.js with Corepack enabled
+- pnpm `10.x`
+- Docker and Docker Compose for the full connected runtime
+
+### Install dependencies
 
 ```bash
+corepack enable
 pnpm install
+```
+
+### Run checks
+
+```bash
 pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
 ```
 
-## Local Runtime
+### Start local development mode
 
-- `pnpm dev` starts all three apps together.
-- API runs on `http://localhost:4000`.
-- Web prefers `http://localhost:3000` and automatically shifts to the next free port if `3000` is already occupied.
-- Worker starts in `mock` mode by default so the monorepo boots even when PostgreSQL and Redis are not running yet.
-- In `connected` mode, auth now has a real Prisma-backed foundation for register, login, refresh, logout, `/auth/me`, and email verification.
-- `GET /workspaces` and `GET /billing/subscription` now also resolve from Prisma-backed repositories when a bearer session is present.
-- `GET /admin/users` now also resolves from Prisma-backed repositories when a bearer session is present.
-- `GET /admin/feature-flags` now also resolves from Prisma-backed repositories when a bearer session is present.
-- `POST /admin/remote-config/publish` now persists Prisma-backed versions and layers when a bearer session is present.
-- `POST /extension/bootstrap` now resolves persisted compatibility policy, feature flags, active remote config layers, and workspace subscription plan in connected mode.
-- `GET /support/impersonation-sessions` now returns recent Prisma-backed impersonation history for support-capable sessions.
-- `GET /support/tickets` now returns Prisma-backed support tickets with server-side queue filters and named presets for status, ownership, search, and history depth, including ownership, handoff metadata, and recent workflow timeline entries, for support-capable sessions.
-- `POST /support/tickets/update` now persists support ticket ownership changes, workflow state transitions, handoff notes, and audit-backed ticket timeline history.
-- `POST /support/impersonation` now persists Prisma-backed impersonation sessions plus audit and security events when a bearer session is present.
-- `POST /support/impersonation/end` now closes active Prisma-backed impersonation sessions, persists an optional close reason, and writes termination audit and security events.
-- `/admin/users` now renders a connected user directory for admin/support-capable sessions.
-- `/admin/users` can now start persisted support impersonation sessions directly from the web UI for connected support-capable sessions, with editable launch reason and operator note.
-- `/admin/support` now renders a live support queue, shows recent ticket workflow history, supports URL-backed queue filters plus one-click named queue presets for status, ownership, search, and history depth, lets each connected operator save personal favorite presets that float to the front of the console, lets operators claim tickets, move them through workflow states, edit handoff notes, start ticket-linked impersonation sessions with editable session reason and operator note, and end active sessions with an editable close reason in the web admin surface for connected support-capable sessions.
+```bash
+pnpm dev
+```
 
-## Database Setup
+Default local services:
+
+- Web: `http://localhost:3000`
+- API: `http://localhost:4000`
+- Worker: starts in mock-friendly mode by default
+
+## Connected Docker runtime
+
+The Docker setup starts the full local platform stack:
+
+- PostgreSQL 16
+- Redis 7
+- API service
+- Web service
+- Worker service
+
+```bash
+docker compose up --build
+```
+
+Default Docker ports:
+
+| Service | URL / Port |
+|---|---|
+| Web | `http://localhost:3000` |
+| API | `http://localhost:4000` |
+| PostgreSQL | `localhost:5432` |
+| Redis | `localhost:6379` |
+
+On container startup, the API applies Prisma migrations and seeds demo data automatically. The worker waits for the API and backing services to become healthy before starting.
+
+For more details, see:
+
+- [`docs/docker-guide.md`](docs/docker-guide.md)
+- [`docs/site-platform-extension-connection-runbook.md`](docs/site-platform-extension-connection-runbook.md)
+
+## Database setup
+
+For manual local database work:
 
 ```bash
 corepack pnpm --filter @quizmind/database db:migrate:dev
 corepack pnpm --filter @quizmind/database db:seed
 ```
 
-After migrating and seeding the database, the default demo auth credentials are:
+Default demo credentials after seeding:
 
-- `admin@quizmind.dev` / `demo-password`
-- `support@quizmind.dev` / `demo-password`
-- `viewer@quizmind.dev` / `demo-password`
+| Persona | Email | Password |
+|---|---|---|
+| Platform admin | `admin@quizmind.dev` | `demo-password` |
+| Support admin | `support@quizmind.dev` | `demo-password` |
+| Workspace viewer | `viewer@quizmind.dev` | `demo-password` |
 
-## Docker Runtime
+## Demo personas
 
-- `docker compose up --build` starts `postgres`, `redis`, `api`, `web`, and `worker`.
-- On container startup, the API applies Prisma migrations and seeds demo data automatically; the worker also waits for the API to become healthy before starting.
-- Docker defaults:
-  API on `http://localhost:4000`
-  Web on `http://localhost:3000`
-  PostgreSQL on `localhost:5432`
-  Redis on `localhost:6379`
-- Custom host ports can be provided through `.env.docker` based on `.env.docker.example`.
-- Full Docker runbook: `docs/docker-guide.md`
-- Site/platform/extension connection runbook: `docs/site-platform-extension-connection-runbook.md`
+The web app supports role-oriented demo views via query parameters:
 
-## Demo Personas
+- `platform-admin` — full dashboard and admin visibility.
+- `support-admin` — support workflows plus limited admin visibility.
+- `workspace-viewer` — dashboard-only experience with admin denial state.
 
-- `platform-admin` - full dashboard + admin visibility.
-- `support-admin` - support workflows plus limited admin visibility.
-- `workspace-viewer` - dashboard-only experience with admin denial state.
-
-Use these via query params such as `/app?persona=platform-admin` and `/admin?persona=workspace-viewer`.
-
-## Structure
+Examples:
 
 ```text
-apps/
-  web/
-  api/
-  worker/
-packages/
-  ui/
-  config/
-  contracts/
-  auth/
-  billing/
-  extension/
-  logger/
-  database/
-  permissions/
-  email/
-  queue/
-docs/
-  architecture.md
-  foundation-roadmap.md
-  control-plane-primitives.md
-  data-model.md
-  api-surface.md
-  service-composition.md
-  remote-config-flow.md
-  billing-flow.md
-  web-app-flow.md
-  support-flow.md
-  site-platform-extension-connection-runbook.md
+/app?persona=platform-admin
+/admin?persona=workspace-viewer
 ```
+
+## API and runtime highlights
+
+Connected mode includes Prisma-backed foundations for:
+
+- `register`, `login`, `refresh`, `logout`, `/auth/me`, and email verification.
+- `GET /workspaces` and `GET /billing/subscription`.
+- `GET /admin/users` and admin user directory UI.
+- `GET /admin/feature-flags`.
+- `POST /admin/remote-config/publish`.
+- `POST /extension/bootstrap` for compatibility policy, feature flags, active remote config layers, and workspace subscription plan.
+- Support impersonation sessions, ticket queues, ticket ownership/workflow transitions, handoff notes, audit-backed timeline history, and operator favorite presets.
+
+## Documentation map
+
+- [`docs/architecture.md`](docs/architecture.md) — high-level platform architecture.
+- [`docs/data-model.md`](docs/data-model.md) — domain and database model notes.
+- [`docs/api-surface.md`](docs/api-surface.md) — API surface overview.
+- [`docs/service-composition.md`](docs/service-composition.md) — service/module boundaries.
+- [`docs/remote-config-flow.md`](docs/remote-config-flow.md) — remote config publishing flow.
+- [`docs/billing-flow.md`](docs/billing-flow.md) — billing and entitlement flow.
+- [`docs/web-app-flow.md`](docs/web-app-flow.md) — web application flow.
+- [`docs/support-flow.md`](docs/support-flow.md) — support and impersonation workflows.
+- [`docs/foundation-roadmap.md`](docs/foundation-roadmap.md) — planned platform foundation milestones.
+
+## Status
+
+This repository represents an evolving platform foundation rather than a polished production product. Some modules are implemented as connected Prisma-backed flows, while others are intentionally modeled as platform primitives or roadmap-ready boundaries.
+
+## Why it matters for review
+
+For recruiters or engineering reviewers, this project demonstrates practical exposure to:
+
+- monorepo organization;
+- typed full-stack TypeScript development;
+- backend service boundaries;
+- authentication and authorization concepts;
+- database schema design;
+- Dockerized local infrastructure;
+- support/admin workflows;
+- platform-style product thinking.
